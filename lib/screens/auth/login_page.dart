@@ -9,7 +9,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color.fromARGB(255, 229, 10, 10),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
