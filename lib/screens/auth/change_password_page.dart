@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../../routes/app_routes.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_text_field.dart';
 
 class ChangePasswordPage extends StatelessWidget {
   const ChangePasswordPage({super.key});
@@ -9,56 +9,34 @@ class ChangePasswordPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.lightBeige,
       appBar: AppBar(
-        title: const Text('Đổi mật khẩu'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        title: const Text("Đổi Mật Khẩu", style: TextStyle(color: AppColors.brown, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.brown),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu mới',
-                prefixIcon: const Icon(Icons.lock_outline),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Xác nhận mật khẩu',
-                prefixIcon: const Icon(Icons.lock_reset),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              const AppTextField(label: "Mật khẩu hiện tại", hintText: "••••••••", icon: Icons.lock_outline, isPassword: true),
+              const SizedBox(height: 16),
+              const AppTextField(label: "Mật khẩu mới", hintText: "••••••••", icon: Icons.lock_reset, isPassword: true),
+              const SizedBox(height: 16),
+              const AppTextField(label: "Xác nhận mật khẩu mới", hintText: "••••••••", icon: Icons.check_circle_outline, isPassword: true),
+              const SizedBox(height: 32),
+              AppButton(
+                text: "Cập Nhật Mật Khẩu",
+                backgroundColor: AppColors.orange,
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, AppRoutes.login);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đổi mật khẩu thành công!")));
+                  Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Cập nhật mật khẩu'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

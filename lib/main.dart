@@ -1,39 +1,27 @@
 import 'package:flutter/material.dart';
-
+import 'theme/app_colors.dart';
 import 'routes/app_routes.dart';
 
-import 'screens/splash/splash_page.dart';
-import 'screens/auth/login_page.dart';
-import 'screens/auth/register_page.dart';
-import 'screens/auth/forgot_password_page.dart';
-import 'screens/auth/change_password_page.dart';
-import 'screens/main/main_page.dart';
-import 'screens/profile/profile_page.dart';
-
 void main() {
-  runApp(const MyApp());
+  runApp(const PheLaApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PheLaApp extends StatelessWidget {
+  const PheLaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, WidgetBuilder> appRoutes = {
-      AppRoutes.splash: (context) => const SplashPage(),
-      AppRoutes.login: (context) => const LoginPage(),
-      AppRoutes.register: (context) => const RegisterPage(),
-      AppRoutes.forgotPassword: (context) => const ForgotPasswordPage(),
-      AppRoutes.changePassword: (context) => const ChangePasswordPage(),
-      AppRoutes.main: (context) => const MainPage(),
-      AppRoutes.profile: (context) => const ProfilePage(),
-    };
-
     return MaterialApp(
-      title: 'Phe La App',
+      title: 'Phê La - Nốt Hương Đặc Sản',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.lightBeige,
+        primaryColor: AppColors.brown,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.brown),
+        fontFamily: 'Roboto', // Bạn có thể thêm font chữ riêng của Phê La vào pubspec.yaml sau
+      ),
       initialRoute: AppRoutes.splash,
-      routes: appRoutes,
+      routes: AppRoutes.getRoutes(),
     );
   }
 }
