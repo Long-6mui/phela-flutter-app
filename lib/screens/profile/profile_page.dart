@@ -78,7 +78,7 @@ class ProfilePage extends StatelessWidget {
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap, {String? trailing}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)]),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)]),
       child: ListTile(
         leading: Icon(icon, color: AppColors.orange),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.brown, fontSize: 15)),
