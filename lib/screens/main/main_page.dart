@@ -197,7 +197,7 @@ class _RoundIcon extends StatelessWidget {
           height: 46,
           padding: const EdgeInsets.symmetric(horizontal: 13),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Row(
@@ -304,7 +304,7 @@ class _BannerSliderState extends State<_BannerSlider> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.16),
+                        color: Colors.black.withValues(alpha: 0.16),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -521,7 +521,7 @@ class _ProductCard extends StatelessWidget {
                   child: Icon(
                     Icons.local_cafe,
                     size: 72,
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
                 Positioned(
