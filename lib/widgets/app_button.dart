@@ -21,13 +21,38 @@ class AppButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: textColor,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+        style: ButtonStyle(
+          mouseCursor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.disabled)) {
+              return SystemMouseCursors.forbidden;
+            }
+            return SystemMouseCursors.click;
+          }),
+          backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(MaterialState.hovered)) {
+              return backgroundColor?.withOpacity(0.85);
+            }
+            return backgroundColor;
+          }),
+          foregroundColor: MaterialStateProperty.all(textColor),
+          elevation: MaterialStateProperty.resolveWith<double>((states) {
+            if (states.contains(MaterialState.hovered)) {
+              return 6;
+            }
+            return 2;
+          }),
+          shadowColor: MaterialStateProperty.all(Colors.black26),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
+          overlayColor: MaterialStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(MaterialState.hovered)) {
+              return Colors.black.withOpacity(0.08);
+            }
+            return null;
+          }),
         ),
         onPressed: onPressed,
         child: Text(

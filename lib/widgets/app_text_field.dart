@@ -22,11 +22,13 @@ class AppTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brown),
-        ),
-        const SizedBox(height: 6),
+        if (label.isNotEmpty) ...[
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brown),
+          ),
+          const SizedBox(height: 6),
+        ],
         TextField(
           controller: controller,
           obscureText: isPassword,
