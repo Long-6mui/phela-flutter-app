@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 import '../../routes/app_routes.dart';
+import '../../services/auth_storage.dart';
+import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 
@@ -35,7 +36,12 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 AppButton(
                   text: "Đăng Nhập",
-                  onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.main),
+                  onPressed: () async {
+                    await AuthStorage.saveLoginStatus(isLoggedIn: true);
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, AppRoutes.main);
+                    }
+                  },
                 ),
                 const SizedBox(height: 24),
                 Row(

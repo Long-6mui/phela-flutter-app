@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../../services/auth_storage.dart';
+import '../auth/login_page.dart';
 import '../main/main_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -15,15 +17,20 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 900),
-            pageBuilder: (context, animation, secondaryAnimation) {
-              return const MainPage();
-            },
+    Timer(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+
+      final loggedIn = await AuthStorage.isLoggedIn();
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 900),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return loggedIn ? const MainPage() : const LoginPage();
+          },
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               final fadeAnimation = CurvedAnimation(
                 parent: animation,
@@ -64,7 +71,7 @@ class _SplashPageState extends State<SplashPage> {
           ),
         );
       }
-    });
+    );
   }
 
   @override

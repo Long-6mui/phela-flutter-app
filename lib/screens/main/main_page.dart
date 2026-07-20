@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../services/user_profile_service.dart';
+import '../profile/profile_page.dart';
 
 import '../../database/database_helper.dart';
 import '../../models/product_model.dart';
@@ -20,7 +22,7 @@ class _MainPageState extends State<MainPage> {
     HomePage(),
     Center(child: Text('Đặt hàng')),
     Center(child: Text('Ưu đãi')),
-    Center(child: Text('Khác')),
+    ProfilePage(),
   ];
 
   @override
@@ -158,45 +160,50 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Happy Chill Day 🌤️',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
+    return ValueListenableBuilder(
+      valueListenable: UserProfileService.profileNotifier,
+      builder: (context, profile, child) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Happy Chill Day 🌤️',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      profile.fullName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        color: Color(0xFFC49A78),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 6),
-                Text(
-                  'Lê Tấn Hoàng Long',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Color(0xFFC49A78),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              _RoundIcon(
+                icon: Icons.confirmation_num_outlined,
+                text: '1',
+              ),
+              const SizedBox(width: 12),
+              _RoundIcon(
+                icon: Icons.notifications_none,
+                hasDot: true,
+              ),
+            ],
           ),
-          _RoundIcon(
-            icon: Icons.confirmation_num_outlined,
-            text: '1',
-          ),
-          SizedBox(width: 12),
-          _RoundIcon(
-            icon: Icons.notifications_none,
-            hasDot: true,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -220,7 +227,7 @@ class _RoundIcon extends StatelessWidget {
           height: 46,
           padding: const EdgeInsets.symmetric(horizontal: 13),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Row(
@@ -328,7 +335,7 @@ class _BannerSliderState extends State<_BannerSlider> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.16),
+                        color: Colors.black.withValues(alpha: 0.16),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
