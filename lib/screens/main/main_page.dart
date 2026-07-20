@@ -1,5 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
+import '../../database/database_helper.dart';
+import '../../models/product_model.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -96,6 +101,20 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices {
+    return {
+      PointerDeviceKind.touch,
+      PointerDeviceKind.mouse,
+      PointerDeviceKind.trackpad,
+      PointerDeviceKind.stylus,
+    };
+  }
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -104,25 +123,29 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF6E5C9),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 105),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              _Header(),
-              _BannerSlider(),
-              _DeliveryBox(),
-              _SectionTitle(title: 'Món bán chạy 🔥', showMore: false),
-              _ProductList(),
-              _SectionTitle(title: 'Dành cho bạn', showMore: false),
-              _SmallProductList(),
-              _SectionTitle(title: 'Món ngon phải thử ✨', showMore: false),
-              _HorizontalProductList(),
-              _SectionTitle(title: 'Sự kiện', showMore: true),
-              _NewsList(),
-              _SectionTitle(title: 'Tin tức', showMore: true),
-              _NewsList(),
-            ],
+        child: ScrollConfiguration(
+          behavior: const _AppScrollBehavior(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 105),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                _Header(),
+                _BannerSlider(),
+                _DeliveryBox(),
+                _SectionTitle(title: 'Món bán chạy 🔥', showMore: false),
+                _ProductList(),
+                _SectionTitle(title: 'Dành cho bạn', showMore: false),
+                _SmallProductList(),
+                _SectionTitle(title: 'Món ngon phải thử ✨', showMore: false),
+                _HorizontalProductList(),
+                _SectionTitle(title: 'Sự kiện', showMore: true),
+                _NewsList(),
+                _SectionTitle(title: 'Tin tức', showMore: true),
+                _NewsList(),
+              ],
+            ),
           ),
         ),
       ),
@@ -197,7 +220,7 @@ class _RoundIcon extends StatelessWidget {
           height: 46,
           padding: const EdgeInsets.symmetric(horizontal: 13),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withOpacity(0.6),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Row(
@@ -292,6 +315,7 @@ class _BannerSliderState extends State<_BannerSlider> {
             child: PageView.builder(
               controller: _pageController,
               itemCount: banners.length,
+              physics: const BouncingScrollPhysics(),
               onPageChanged: (index) {
                 setState(() {
                   currentPage = index;
@@ -304,7 +328,7 @@ class _BannerSliderState extends State<_BannerSlider> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.16),
+                        color: Colors.black.withOpacity(0.16),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -315,6 +339,18 @@ class _BannerSliderState extends State<_BannerSlider> {
                     banners[index],
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFFE8D8BF),
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 60,
+                            color: Color(0xFFB88455),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
@@ -448,51 +484,65 @@ class _ProductList extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 248,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        children: const [
-          _ProductCard(
-            name: 'Phan Xi Păng Phê Phin Đặc Sản',
-            price: '75,000',
-            badge: 'MỚI',
-            color1: Color(0xFF9EDDF5),
-            color2: Color(0xFFD8943C),
-          ),
-          _ProductCard(
-            name: 'COMBO CHILL 01',
-            price: '79,000',
-            badge: 'COMBO',
-            color1: Color(0xFF315238),
-            color2: Color(0xFFE8C08D),
-          ),
-          _ProductCard(
-            name: 'Ô Long Nhài Sữa',
-            price: '69,000',
-            badge: 'SIZE L',
-            color1: Color(0xFFDED3BF),
-            color2: Color(0xFFF7F0E5),
-          ),
-        ],
+      child: FutureBuilder<List<ProductModel>>(
+        future: DatabaseHelper.instance.getBestSellerProducts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFB88455),
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text(
+                'Lỗi tải danh sách món',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          }
+
+          final products = snapshot.data ?? [];
+
+          if (products.isEmpty) {
+            return const Center(
+              child: Text('Chưa có món bán chạy'),
+            );
+          }
+
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              return _ProductCard(product: products[index]);
+            },
+          );
+        },
       ),
     );
   }
 }
 
 class _ProductCard extends StatelessWidget {
-  final String name;
-  final String price;
-  final String badge;
-  final Color color1;
-  final Color color2;
+  final ProductModel product;
 
   const _ProductCard({
-    required this.name,
-    required this.price,
-    required this.badge,
-    required this.color1,
-    required this.color2,
+    required this.product,
   });
+
+  String formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (match) => ',',
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -507,21 +557,25 @@ class _ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             height: 130,
             width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color1, color2],
-              ),
-            ),
             child: Stack(
               children: [
-                Center(
-                  child: Icon(
-                    Icons.local_cafe,
-                    size: 72,
-                    color: Colors.white.withValues(alpha: 0.85),
+                Positioned.fill(
+                  child: Image.asset(
+                    product.imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFFE8D8BF),
+                        child: const Icon(
+                          Icons.local_cafe,
+                          size: 70,
+                          color: Color(0xFFC08A55),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Positioned(
@@ -539,7 +593,7 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      badge,
+                      product.badge,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -554,7 +608,7 @@ class _ProductCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
             child: Text(
-              name,
+              product.name,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -572,7 +626,7 @@ class _ProductCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    price,
+                    formatPrice(product.price),
                     style: const TextStyle(
                       color: Color(0xFFB88455),
                       fontSize: 18,
@@ -606,6 +660,7 @@ class _SmallProductList extends StatelessWidget {
       height: 230,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: const [
           _SmallProductCard(
@@ -615,6 +670,14 @@ class _SmallProductList extends StatelessWidget {
           _SmallProductCard(
             name: 'Matcha Latte Đặc Sản',
             price: '65,000',
+          ),
+          _SmallProductCard(
+            name: 'Phê Phin Sữa Đá',
+            price: '55,000',
+          ),
+          _SmallProductCard(
+            name: 'Trà Đào Cam Sả',
+            price: '59,000',
           ),
         ],
       ),
@@ -715,10 +778,12 @@ class _HorizontalProductList extends StatelessWidget {
       height: 92,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: const [
           _HorizontalProductCard(title: 'Combo Chill Đổi Phê Truffle'),
           _HorizontalProductCard(title: 'Trà Xanh Đà Lạt'),
+          _HorizontalProductCard(title: 'Combo Chill Cà Phê Sữa'),
         ],
       ),
     );
@@ -766,6 +831,7 @@ class _HorizontalProductCard extends StatelessWidget {
               child: Text(
                 title,
                 maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 20,
                   height: 1.25,
@@ -799,6 +865,7 @@ class _NewsList extends StatelessWidget {
       height: 246,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: const [
           _NewsCard(
@@ -810,6 +877,16 @@ class _NewsList extends StatelessWidget {
             title: 'PHAN XI PĂNG PHÊ PHIN ĐẶC SẢN 🎶🐐',
             color1: Color(0xFF9EDDF5),
             color2: Color(0xFFD8943C),
+          ),
+          _NewsCard(
+            title: 'Đà Lạt phiên bản chốn chill đặc sản',
+            color1: Color(0xFF315238),
+            color2: Color(0xFFE8C08D),
+          ),
+          _NewsCard(
+            title: 'Không gian mới dành cho ngày chill cùng bạn bè',
+            color1: Color(0xFFE3B372),
+            color2: Color(0xFFF6E4BF),
           ),
         ],
       ),
