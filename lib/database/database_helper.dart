@@ -13,7 +13,7 @@ class DatabaseHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await _initDB('phela.db');
+    _database = await _initDB('phela_v3.db');
     return _database!;
   }
 
@@ -46,24 +46,62 @@ class DatabaseHelper {
   Future<void> _insertDefaultProducts(Database db) async {
     final List<ProductModel> products = [
       ProductModel(
+        name: 'Đà Lạt Phiên Bản Mới',
+        price: 69000,
+        badge: 'MỚI',
+        imagePath: 'assets/images/coffees/Da-Lat-phien-ban-moi-Moi-scaled.jpg',
+        isBestSeller: 1,
+      ),
+      ProductModel(
+        name: 'Phan Xi Păng Long Nhãn Đá Xay',
+        price: 79000,
+        badge: 'HOT',
+        imagePath:
+            'assets/images/coffees/Phan-Xi-Pang-Long-Nhan-da-xay-scaled.jpg',
+        isBestSeller: 1,
+      ),
+      ProductModel(
         name: 'Phan Xi Păng Phê Phin Đặc Sản',
         price: 75000,
         badge: 'MỚI',
-        imagePath: 'assets/images/coffees/phan_xi_pang.jpg',
+        imagePath:
+            'assets/images/coffees/Phan-Xi-Pang-Phe-Phin-Dac-San-da-xay-scaled.jpg',
         isBestSeller: 1,
       ),
       ProductModel(
-        name: 'COMBO CHILL 01',
-        price: 79000,
-        badge: 'COMBO',
-        imagePath: 'assets/images/coffees/combo_chill_01.jpg',
+        name: 'Phê Ame Hạt Colom Ethiopia',
+        price: 65000,
+        badge: 'BEST',
+        imagePath: 'assets/images/coffees/Phe-Ame-hat-Colom-Ethi-scaled.jpg',
         isBestSeller: 1,
       ),
       ProductModel(
-        name: 'Ô Long Nhài Sữa',
+        name: 'Phê Đen',
+        price: 49000,
+        badge: 'CLASSIC',
+        imagePath: 'assets/images/coffees/Phe-Den.jpg',
+        isBestSeller: 1,
+      ),
+      ProductModel(
+        name: 'Phê Nâu',
+        price: 55000,
+        badge: 'HOT',
+        imagePath: 'assets/images/coffees/Phe-Nau.jpg',
+        isBestSeller: 1,
+      ),
+      ProductModel(
+        name: 'Phê Ô Long Bưởi Chanh Vàng',
         price: 69000,
-        badge: 'SIZE L',
-        imagePath: 'assets/images/coffees/olong_nhai_sua.jpg',
+        badge: 'MỚI',
+        imagePath:
+            'assets/images/coffees/Phe-O-Long-Buoi-Chanh-vang-Moi-scaled.jpg',
+        isBestSeller: 1,
+      ),
+      ProductModel(
+        name: 'Phê Xỉu Vani',
+        price: 59000,
+        badge: 'NEW',
+        imagePath: 'assets/images/coffees/Phe-Xiu-Vani.jpg',
         isBestSeller: 1,
       ),
     ];
