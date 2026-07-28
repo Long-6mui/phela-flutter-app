@@ -8,6 +8,8 @@ import '../../services/user_profile_service.dart';
 import '../profile/profile_page.dart';
 import 'notification_page.dart';
 import 'order_page.dart';
+import '../voucher/voucher_page.dart'; // <-- Import màn hình Voucher
+import '../qr/qr_page.dart';           // <-- Import màn hình QR
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -19,11 +21,12 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int currentIndex = 0;
 
-  final List<Widget> pages = const [
-    HomePage(),
-    OrderPage(),
-    Center(child: Text('Ưu đãi')),
-    ProfilePage(),
+  // Đã gỡ từ khóa const ở List và thay thế trang Ưu đãi
+  final List<Widget> pages = [
+    const HomePage(),
+    const OrderPage(),
+    const VoucherPage(), // <-- Màn hình Ưu đãi đã được tích hợp
+    const ProfilePage(),
   ];
 
   @override
@@ -53,7 +56,15 @@ class _MainPageState extends State<MainPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2F2E2C),
         shape: const CircleBorder(),
-        onPressed: () {},
+        onPressed: () {
+          // Lệnh chuyển sang màn hình QR Mã thành viên
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const QRPage(),
+            ),
+          );
+        },
         child: const Icon(Icons.qr_code_2, color: Color(0xFFD4A36A), size: 34),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -2344,341 +2355,6 @@ class _BottomChooseBar extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LegacyOrderPage extends StatefulWidget {
-  const _LegacyOrderPage();
-
-  @override
-  State<_LegacyOrderPage> createState() => _LegacyOrderPageState();
-}
-
-class _LegacyOrderPageState extends State<_LegacyOrderPage> {
-  final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'Tất cả';
-
-  static const List<String> _categories = [
-    'Tất cả',
-    'Cà phê',
-    'Trà',
-    'Matcha',
-    'Đá xay',
-  ];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  String _normalized(String value) {
-    const source =
-        'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ';
-    const target =
-        'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd';
-    var result = value.toLowerCase();
-    for (var index = 0; index < source.length; index++) {
-      result = result.replaceAll(source[index], target[index]);
-    }
-    return result;
-  }
-
-  bool _matchesCategory(DrinkItem item) {
-    if (_selectedCategory == 'Tất cả') return true;
-    final name = _normalized(item.name);
-    switch (_selectedCategory) {
-      case 'Cà phê':
-        return name.contains('phe') || name.contains('ca phe');
-      case 'Trà':
-        return name.contains('tra') || name.contains('o long');
-      case 'Matcha':
-        return name.contains('matcha');
-      case 'Đá xay':
-        return name.contains('da xay');
-      default:
-        return true;
-    }
-  }
-
-  List<DrinkItem> get _filteredItems {
-    final query = _normalized(_searchController.text.trim());
-    return orderItems.where((item) {
-      final matchesSearch =
-          query.isEmpty || _normalized(item.name).contains(query);
-      return matchesSearch && _matchesCategory(item);
-    }).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredItems = _filteredItems;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6E5C9),
-      body: _AppBackground(
-        child: SafeArea(
-          child: ScrollConfiguration(
-            behavior: const _AppScrollBehavior(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 18, 20, 10),
-                  child: Text(
-                    'Đặt hàng',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (_) => setState(() {}),
-                    textInputAction: TextInputAction.search,
-                    decoration: InputDecoration(
-                      hintText: 'Bạn muốn uống gì hôm nay?',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: _searchController.text.isEmpty
-                          ? null
-                          : IconButton(
-                              tooltip: 'Xóa tìm kiếm',
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {});
-                              },
-                              icon: const Icon(Icons.close_rounded),
-                            ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.92),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 44,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: _categories.map((category) {
-                      return _CategoryChip(
-                        title: category,
-                        selected: category == _selectedCategory,
-                        onTap: () {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Expanded(
-                  child: filteredItems.isEmpty
-                      ? const _EmptyOrderResult()
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            final crossAxisCount = constraints.maxWidth >= 900
-                                ? 4
-                                : constraints.maxWidth >= 600
-                                ? 3
-                                : 2;
-                            return GridView.builder(
-                              padding: const EdgeInsets.fromLTRB(
-                                20,
-                                0,
-                                20,
-                                110,
-                              ),
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: filteredItems.length,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: crossAxisCount,
-                                    mainAxisSpacing: 16,
-                                    crossAxisSpacing: 16,
-                                    childAspectRatio: 0.72,
-                                  ),
-                              itemBuilder: (context, index) {
-                                return _OrderProductCard(
-                                  item: filteredItems[index],
-                                );
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  final String title;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  const _CategoryChip({required this.title, this.selected = false, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: Material(
-        color: selected ? const Color(0xFFB88455) : Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Center(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: selected ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyOrderResult extends StatelessWidget {
-  const _EmptyOrderResult();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(32, 20, 32, 120),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.local_cafe_outlined, size: 64, color: Color(0xFFB88455)),
-            SizedBox(height: 14),
-            Text(
-              'Chưa tìm thấy món phù hợp',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Thử đổi từ khóa hoặc chọn một danh mục khác nhé.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 15),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OrderProductCard extends StatelessWidget {
-  final DrinkItem item;
-
-  const _OrderProductCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5EAD7),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    item.imagePath,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const _ImageErrorBox();
-                    },
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 7,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE96732),
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(6),
-                      ),
-                    ),
-                    child: Text(
-                      item.badge,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
-            child: Text(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 16,
-                height: 1.2,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.price,
-                    style: const TextStyle(
-                      color: Color(0xFFB88455),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                _AddButton(item: item),
-              ],
             ),
           ),
         ],
