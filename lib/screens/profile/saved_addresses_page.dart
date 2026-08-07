@@ -4,8 +4,19 @@ import '../../models/address.dart';
 import '../../services/address_service.dart';
 import '../../theme/app_colors.dart';
 
-class SavedAddressesPage extends StatelessWidget {
+class SavedAddressesPage extends StatefulWidget {
   const SavedAddressesPage({super.key});
+
+  @override
+  State<SavedAddressesPage> createState() => _SavedAddressesPageState();
+}
+
+class _SavedAddressesPageState extends State<SavedAddressesPage> {
+  @override
+  void initState() {
+    super.initState();
+    AddressService.initializeAddresses();
+  }
 
   @override
   Widget build(BuildContext context) {

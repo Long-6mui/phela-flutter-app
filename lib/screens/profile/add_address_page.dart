@@ -105,8 +105,8 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     const SizedBox(height: 24),
                     AppButton(
                       text: 'Lưu',
-                      onPressed: () {
-                        AddressService.addAddress(
+                      onPressed: () async {
+                        await AddressService.addAddress(
                           Address(
                             recipientName: _nameController.text.isEmpty ? 'Khách hàng Phê La' : _nameController.text,
                             phone: _phoneController.text.isEmpty ? '0909370523' : _phoneController.text,

@@ -4,6 +4,7 @@ import '../screens/auth/login_page.dart';
 import '../screens/auth/register_page.dart';
 import '../screens/auth/forgot_password_page.dart';
 import '../screens/auth/change_password_page.dart';
+import '../screens/auth/debug_clear_db.dart';
 import '../screens/profile/profile_page.dart';
 import '../screens/profile/edit_profile_page.dart';
 import '../screens/profile/edit_address_page.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String changePassword = '/change-password';
+  static const String debugClearDb = '/debug-clear-db';
   static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
   static const String savedAddresses = '/profile/addresses';
@@ -31,6 +33,7 @@ class AppRoutes {
       register: (context) => const RegisterPage(),
       forgotPassword: (context) => const ForgotPasswordPage(),
       changePassword: (context) => const ChangePasswordPage(),
+      debugClearDb: (context) => const DebugClearDB(),
       profile: (context) => const ProfilePage(),
       editProfile: (context) => const EditProfilePage(),
       savedAddresses: (context) => const SavedAddressesPage(),

@@ -1,10 +1,12 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../../models/user_profile.dart';
+import '../../services/auth_storage.dart';
 import '../../services/user_profile_service.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -21,6 +23,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Gender _selectedGender = UserProfileService.profile.gender;
   Uint8List? _avatarBytes = UserProfileService.profile.avatarBytes;
 
+  String get _displayedInitials {
+    if (_avatarBytes != null) {
+      return '';
+    }
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      return UserProfileService.profile.initials;
+    }
+    final parts = name.split(RegExp(r'\s+')).where((part) => part.isNotEmpty).toList();
+    if (parts.isEmpty) return UserProfileService.profile.initials;
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +46,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _phoneController = TextEditingController(text: profile.phone);
     _selectedGender = profile.gender;
     _avatarBytes = profile.avatarBytes;
+    _nameController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  Future<void> _pickAvatar() async {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 80,
+    );
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _avatarBytes = bytes;
+      });
+    }
   }
 
   @override
@@ -38,23 +72,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickAvatar() async {
-    final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 800,
-      maxHeight: 800,
-      imageQuality: 80,
-    );
-
-    if (pickedFile != null) {
-      final bytes = await pickedFile.readAsBytes();
-      setState(() {
-        _avatarBytes = bytes;
-      });
-    }
   }
 
   @override
@@ -96,7 +113,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Colors.black.withOpacity(0.05),
                             blurRadius: 22,
                             offset: const Offset(0, 8),
                           ),
@@ -106,33 +123,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         children: [
                           const SizedBox(height: 30),
                           Center(
-                            child: Stack(
-                              alignment: Alignment.bottomRight,
-                              children: [
-                                CircleAvatar(
-                                  radius: 56,
-                                  backgroundColor: const Color(0xFFD9C5AB),
-                                  backgroundImage: _avatarBytes != null ? MemoryImage(_avatarBytes!) : null,
-                                  child: _avatarBytes == null
-                                      ? Text(
-                                          UserProfileService.profile.initials,
-                                          style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: AppColors.brown),
-                                        )
-                                      : null,
-                                ),
-                                GestureDetector(
-                                  onTap: _pickAvatar,
-                                  child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.orange,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 20),
-                                  ),
-                                ),
-                              ],
+                            child: GestureDetector(
+                              onTap: _pickAvatar,
+                              child: CircleAvatar(
+                                radius: 56,
+                                backgroundColor: const Color(0xFFD9C5AB),
+                                backgroundImage: _avatarBytes != null ? MemoryImage(_avatarBytes!) : null,
+                                child: _avatarBytes == null
+                                    ? Text(
+                                        _displayedInitials,
+                                        style: const TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: AppColors.brown),
+                                      )
+                                    : null,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -160,6 +163,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   hintText: 'user.phela@gmail.com',
                                   icon: Icons.email_outlined,
                                   controller: _emailController,
+                                  readOnly: true,
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(
@@ -167,22 +171,66 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   hintText: '0909370523',
                                   icon: Icons.phone_outlined,
                                   controller: _phoneController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 ),
                                 const SizedBox(height: 24),
                                 AppButton(
                                   text: 'Cập nhật tài khoản',
-                                  onPressed: () {
-                                    UserProfileService.updateProfile(
-                                      fullName: _nameController.text,
-                                      email: _emailController.text,
-                                      phone: _phoneController.text,
+                                  onPressed: () async {
+                                    final fullName = _nameController.text.trim();
+                                    final phone = _phoneController.text.trim();
+
+                                    if (fullName.isEmpty) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Vui lòng nhập họ tên.')),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    if (phone.isEmpty) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Vui lòng nhập số điện thoại.')),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    final phoneRegExp = RegExp(r'^\d+$');
+                                    if (!phoneRegExp.hasMatch(phone)) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Số điện thoại chỉ được nhập số.')),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    final isPhoneDuplicate = await AuthStorage.isPhoneUsedByOther(phone);
+                                    if (isPhoneDuplicate) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Số điện thoại này đã được sử dụng.')),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    await UserProfileService.updateProfile(
+                                      fullName: fullName,
+                                      phone: phone,
                                       gender: _selectedGender,
                                       avatarBytes: _avatarBytes,
                                     );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Thông tin cá nhân đã được cập nhật.')),
-                                    );
-                                    Navigator.pop(context);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Thông tin cá nhân đã được cập nhật.')),
+                                      );
+                                      Navigator.pop(context);
+                                    }
                                   },
                                 ),
                                 const SizedBox(height: 24),
@@ -208,13 +256,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => _selectedGender = Gender.male),
+            onTap: () {
+              setState(() {
+                _selectedGender = Gender.male;
+              });
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
                 color: _selectedGender == Gender.male ? AppColors.orange : AppColors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.brown.withValues(alpha: 0.15)),
+                border: Border.all(color: AppColors.brown.withOpacity(0.15)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -239,13 +291,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SizedBox(width: 12),
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => _selectedGender = Gender.female),
+            onTap: () {
+              setState(() {
+                _selectedGender = Gender.female;
+              });
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
                 color: _selectedGender == Gender.female ? AppColors.orange : AppColors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.brown.withValues(alpha: 0.15)),
+                border: Border.all(color: AppColors.brown.withOpacity(0.15)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

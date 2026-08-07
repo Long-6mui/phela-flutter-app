@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../services/auth_storage.dart';
+import '../../services/address_service.dart';
+import '../../services/user_profile_service.dart';
+import '../../database/database_helper.dart';
 import '../auth/login_page.dart';
 import '../main/main_page.dart';
 
@@ -20,7 +23,14 @@ class _SplashPageState extends State<SplashPage> {
     Timer(const Duration(seconds: 3), () async {
       if (!mounted) return;
 
+      // Initialize database to avoid lag on first login
+      await DatabaseHelper.instance.database;
+
       final loggedIn = await AuthStorage.isLoggedIn();
+      if (loggedIn) {
+        await UserProfileService.initializeProfile();
+        await AddressService.initializeAddresses();
+      }
 
       if (!mounted) return;
 

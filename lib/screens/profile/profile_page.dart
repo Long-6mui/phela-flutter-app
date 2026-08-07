@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
+import '../../services/address_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/user_profile_service.dart';
 import '../../theme/app_colors.dart';
@@ -189,7 +190,8 @@ class ProfilePage extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         onPressed: () async {
-                          await AuthStorage.saveLoginStatus(isLoggedIn: false);
+                          await AddressService.clearAddresses();
+                        await UserProfileService.clearProfile();
                           if (context.mounted) {
                             Navigator.pushNamedAndRemoveUntil(
                               context,

@@ -1,23 +1,52 @@
 import 'package:flutter/foundation.dart';
+import '../database/database_helper.dart';
 import '../models/address.dart';
+import 'auth_storage.dart';
 
 class AddressService {
   static final ValueNotifier<List<Address>> addressesNotifier = ValueNotifier<List<Address>>([]);
 
   static List<Address> get addresses => addressesNotifier.value;
 
-  static void addAddress(Address address) {
-    final List<Address> current = List.from(addressesNotifier.value);
-    if (current.isEmpty) {
-      current.add(address.copyWith(isDefault: true));
-    } else {
-      current.add(address.copyWith(isDefault: false));
+  static Future<void> initializeAddresses() async {
+    final userEmail = await AuthStorage.getCurrentUserEmail();
+    if (userEmail == null) {
+      addressesNotifier.value = [];
+      return;
     }
-    addressesNotifier.value = current;
+    addressesNotifier.value = await DatabaseHelper.instance.getAddressesForUser(userEmail);
   }
 
-  static void updateAddress(String id, Address address) {
-    final List<Address> current = addressesNotifier.value.map((item) {
+  static Future<void> addAddress(Address address) async {
+    final List<Address> current = List.from(addressesNotifier.value);
+    final Address newAddress = address.copyWith(isDefault: current.isEmpty ? true : address.isDefault);
+    final userEmail = await AuthStorage.getCurrentUserEmail();
+    if (userEmail == null) return;
+
+    await DatabaseHelper.instance.insertAddress(newAddress, userEmail);
+
+    if (newAddress.isDefault) {
+      final updated = current.map((item) => item.copyWith(isDefault: false)).toList();
+      updated.add(newAddress);
+      addressesNotifier.value = updated;
+    } else {
+      current.add(newAddress);
+      addressesNotifier.value = current;
+    }
+  }
+
+  static Future<void> updateAddress(String id, Address address) async {
+    final List<Address> current = List.from(addressesNotifier.value);
+    final userEmail = await AuthStorage.getCurrentUserEmail();
+    if (userEmail == null) return;
+
+    if (address.isDefault) {
+      await DatabaseHelper.instance.clearDefaultAddressForUser(userEmail);
+    }
+
+    await DatabaseHelper.instance.updateAddress(address);
+
+    final updated = current.map((item) {
       if (item.id != id) {
         return address.isDefault ? item.copyWith(isDefault: false) : item;
       }
@@ -29,18 +58,23 @@ class AddressService {
         isDefault: address.isDefault,
       );
     }).toList();
-    addressesNotifier.value = current;
+
+    addressesNotifier.value = updated;
   }
 
-  static void deleteAddress(String id) {
+  static Future<void> deleteAddress(String id) async {
+    await DatabaseHelper.instance.deleteAddressById(id);
     final current = addressesNotifier.value.where((item) => item.id != id).toList();
     if (current.isNotEmpty && !current.any((item) => item.isDefault)) {
-      current[0] = current[0].copyWith(isDefault: true);
+      final first = current[0].copyWith(isDefault: true);
+      await DatabaseHelper.instance.updateAddress(first);
+      current[0] = first;
     }
     addressesNotifier.value = current;
   }
 
-  static void clearAddresses() {
+  static Future<void> clearAddresses() async {
     addressesNotifier.value = [];
   }
 }
+
