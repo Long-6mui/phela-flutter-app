@@ -1,54 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../../theme/app_colors.dart';
 
 class SupportCard extends StatelessWidget {
-
   const SupportCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-
-    return Container(
-
-      padding: const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-      ),
-
-      child: Row(
-
-        children: [
-
-          const Icon(
-            Icons.support_agent,
-            color: AppColors.orange,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Dòng chữ phía trên
+        const Text(
+          'Bạn cần hỗ trợ hãy liên hệ hotline',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            fontWeight: FontWeight.w400,
           ),
-
-          const SizedBox(width:15),
-
-          const Expanded(
-            child: Text(
-              "Cần hỗ trợ? Liên hệ ngay với Phê La",
+        ),
+        
+        const SizedBox(height: 6),
+        
+        // Dòng chứa Icon và số điện thoại
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.phone_in_talk_outlined, // Icon điện thoại đang gọi/rung
+              color: Color(0xFFB57D52), // Màu nâu Phê La
+              size: 20,
             ),
-          ),
-
-          ElevatedButton(
-
-            onPressed: () {},
-
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brown,
+            SizedBox(width: 6),
+            Text(
+              '1900 3013',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+                color: Color(0xFFB57D52),
+              ),
             ),
-
-            child: const Text("Liên hệ"),
-          )
-
-        ],
-      ),
-
+          ],
+        ),
+      ],
     );
-
   }
 }

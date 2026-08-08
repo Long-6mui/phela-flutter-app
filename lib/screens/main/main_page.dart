@@ -33,8 +33,9 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> pages = [
     const HomePage(),
     const OrderPage(),
-    const VoucherPage(), // <-- Màn hình Ưu đãi đã được tích hợp
+    VoucherPage(), // <-- Màn hình Ưu đãi đã được tích hợp
     const ProfilePage(),
+    QRPage(),
   ];
 
   @override
@@ -43,9 +44,14 @@ class _MainPageState extends State<MainPage> {
       extendBody: true,
       body: Stack(
         children: [
-          pages[currentIndex],
+          // Thay thế pages[currentIndex] bằng khối này để không bị đơ app:
+          IndexedStack(
+            index: currentIndex,
+            children: pages,
+          ),
 
-          if (currentIndex != 3)
+          // Thêm điều kiện && currentIndex != 4 
+          if (currentIndex != 3 && currentIndex != 4)
             Positioned(
               left: 0,
               right: 0,
@@ -65,15 +71,12 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: const Color(0xFF2F2E2C),
         shape: const CircleBorder(),
         onPressed: () {
-          // Lệnh chuyển sang màn hình QR Mã thành viên
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const QRPage(),
-            ),
-          );
+          // Xóa Navigator.push và thay bằng setState
+          setState(() {
+            currentIndex = 4;
+          });
         },
-        child: const Icon(Icons.qr_code_2, color: Color(0xFFD4A36A), size: 34),
+        child: const Icon(Icons.qr_code_2, color: Color.fromARGB(255, 180, 146, 106), size: 34),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: ClipRRect(
