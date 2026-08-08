@@ -10,7 +10,9 @@ import '../screens/profile/edit_profile_page.dart';
 import '../screens/profile/edit_address_page.dart';
 import '../screens/profile/saved_addresses_page.dart';
 import '../screens/profile/add_address_page.dart';
+import '../screens/profile/about_page.dart'; 
 import '../screens/main/main_page.dart';
+import '../screens/store/store_list_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -24,7 +26,9 @@ class AppRoutes {
   static const String savedAddresses = '/profile/addresses';
   static const String addAddress = '/profile/addresses/add';
   static const String editAddress = '/profile/addresses/edit';
+  static const String about = '/about'; 
   static const String main = '/main';
+  static const String store = '/store';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -39,11 +43,13 @@ class AppRoutes {
       savedAddresses: (context) => const SavedAddressesPage(),
       addAddress: (context) => const AddAddressPage(),
       editAddress: (context) => const EditAddressPage(),
+      about: (context) => const AboutPage(), 
       main: (context) {
         final args = ModalRoute.of(context)?.settings.arguments;
         final initialIndex = args is int ? args : 0;
         return MainPage(initialIndex: initialIndex);
       },
+      store: (context) => const StoreListPage(),
     };
   }
 }
