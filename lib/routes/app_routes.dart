@@ -39,7 +39,11 @@ class AppRoutes {
       savedAddresses: (context) => const SavedAddressesPage(),
       addAddress: (context) => const AddAddressPage(),
       editAddress: (context) => const EditAddressPage(),
-      main: (context) => const MainPage(),
+      main: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        final initialIndex = args is int ? args : 0;
+        return MainPage(initialIndex: initialIndex);
+      },
     };
   }
 }

@@ -12,14 +12,22 @@ import '../voucher/voucher_page.dart'; // <-- Import màn hình Voucher
 import '../qr/qr_page.dart';           // <-- Import màn hình QR
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, this.initialIndex = 0});
+
+  final int initialIndex;
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int currentIndex = 0;
+  late int currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
 
   // Đã gỡ từ khóa const ở List và thay thế trang Ưu đãi
   final List<Widget> pages = [
