@@ -40,20 +40,8 @@ class VoucherPage extends StatelessWidget {
             ),
             const TabBarView(
               children: [
-                VoucherTabView(), 
-                Center(          
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFFC49A70)),
-                      SizedBox(height: 16),
-                      Text(
-                        'Không có dữ liệu',
-                        style: TextStyle(fontSize: 16, color: Color(0xFFC49A70)),
-                      ),
-                    ],
-                  ),
-                ),
+                VoucherTabView(),       
+                _UnavailableTabView(),  
               ],
             ),
           ],
@@ -63,6 +51,9 @@ class VoucherPage extends StatelessWidget {
   }
 }
 
+// =========================================================================
+// TAB 1: KHẢ DỤNG (ƯU ĐÃI & ĐỔI NỐT NHẠC)
+// =========================================================================
 class VoucherTabView extends StatefulWidget {
   const VoucherTabView({super.key});
 
@@ -72,8 +63,133 @@ class VoucherTabView extends StatefulWidget {
 
 class _VoucherTabViewState extends State<VoucherTabView> {
   bool isOfferSelected = true; 
+  bool _isVoucherAdded = false; 
 
-  // 1. Bảng chi tiết Ưu đãi Giao hàng
+  void _showApplyVoucherDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Xác nhận nhập ưu đãi',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Sau khi xác nhận, voucher sẽ được tạo và lưu vào Ưu Đãi của bạn',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.black87, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context), 
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F1C1A), 
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: const Text('HUỶ BỎ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _isVoucherAdded = true;
+                          });
+                          Navigator.pop(context); 
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB57D52),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: const Text('XÁC NHẬN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context, String value) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Đổi nốt nhạc', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                const SizedBox(height: 12),
+                Text(
+                  'Đồng Chill có chắc chắn muốn đổi $value nốt nhạc để nhận ưu đãi trị giá $value,000đ?',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context), 
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F1C1A), 
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: const Text('HUỶ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context); 
+                          Navigator.pop(context); 
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB57D52),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: const Text('XÁC NHẬN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showOfferDetailsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -121,7 +237,74 @@ class _VoucherTabViewState extends State<VoucherTabView> {
     );
   }
 
-  // 2. Bảng nhập số điểm khi bấm nút "ĐỔI VOUCHER"
+  // Bảng chi tiết cho Voucher Sản phẩm (Chill đãi từ Phê La)
+  void _showProductOfferDetailsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9), // Tối đa 90% màn hình
+          padding: const EdgeInsets.only(top: 10, left: 24, right: 24, bottom: 24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Chi tiết ưu đãi', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  IconButton(icon: const Icon(Icons.close, color: Colors.grey, size: 28), onPressed: () => Navigator.pop(context)),
+                ],
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      const Text('Chill đãi từ Phê La - Specialty Tea & Coffee', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFB57D52))),
+                      const SizedBox(height: 24),
+                      const Text('Thời hạn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 4),
+                      const Text('22/08/2026', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFFB57D52))),
+                      const SizedBox(height: 20),
+                      const Text('Mô tả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Tặng 01 Thức Uống Đặc Sản (thuộc nhóm Trà Sữa/ Cà Phê), tối đa 54,000VNĐ.\n\n'
+                        'Tiếp nối câu chuyện Ô Long Đặc Sản, Phê La từng bước mở rộng và lan tỏa trải nghiệm Cà Phê Đặc Sản cùng hành trình Đặc Sản mới: Phê La - Specialty Tea & Coffee. Nhân dịp này, Phê La gửi tặng món quà nhỏ, mời bạn cùng chung vui.\n\n'
+                        'Lưu ý:\n'
+                        '- Áp dụng cho đơn hàng có giá trị thanh toán từ 120K (không bao gồm giá trị món tặng). Đồng Chill vui lòng chọn món tặng trong đơn hàng để áp dụng mã ưu đãi.\n'
+                        '- Áp dụng khi đặt hàng qua Ứng dụng Phê La trên toàn hệ thống (trừ Phê La Hòn Thơm và Phê La Phan Xi Păng).\n\n'
+                        'Mời Đồng Chill cùng Phê La khám phá hành trình Specialty Tea & Coffee mới nha 🎶',
+                        style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showExchangePointsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -131,30 +314,25 @@ class _VoucherTabViewState extends State<VoucherTabView> {
         return Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Container(
-            padding: const EdgeInsets.only(top: 10, left: 24, right: 24, bottom: 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Đổi nốt nhạc', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.grey, size: 28), onPressed: () => Navigator.pop(context)),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey, size: 28),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -170,23 +348,24 @@ class _VoucherTabViewState extends State<VoucherTabView> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  autofocus: true, 
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: 'Nhập số điểm muốn đổi...',
-                    hintStyle: TextStyle(color: Colors.grey.shade500),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8C0A7))),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8C0A7))),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFB57D52))),
                   ),
-                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 12),
-                const Text('1 nốt nhạc = Voucher 1.000 VNĐ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFB57D52))),
+                const Text('1 nốt nhạc = Voucher 1.000 VNĐ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFFB57D52))),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB57D52),
+                    backgroundColor: const Color(0xFFC08955), 
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
@@ -201,7 +380,6 @@ class _VoucherTabViewState extends State<VoucherTabView> {
     );
   }
 
-  // 3. Bảng chi tiết khi bấm vào thẻ Voucher nâu
   void _showTicketDetailSheet(BuildContext context, String value) {
     showModalBottomSheet(
       context: context,
@@ -209,10 +387,7 @@ class _VoucherTabViewState extends State<VoucherTabView> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -250,9 +425,9 @@ class _VoucherTabViewState extends State<VoucherTabView> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(".000", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, height: 1.0)),
+                              Text(".000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, height: 1.0)),
                               SizedBox(height: 2),
-                              Text("VNĐ", style: TextStyle(fontSize: 14, color: Colors.white, height: 1.0)),
+                              Text("VNĐ", style: TextStyle(fontSize: 11, color: Colors.white, height: 1.0)),
                             ],
                           ),
                         ],
@@ -302,7 +477,7 @@ class _VoucherTabViewState extends State<VoucherTabView> {
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _showConfirmationDialog(context, value),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFB57D52),
                         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
@@ -372,7 +547,6 @@ class _VoucherTabViewState extends State<VoucherTabView> {
     );
   }
 
-  // ---------- GIAO DIỆN: ƯU ĐÃI ----------
   Widget _buildOfferSection() {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -394,7 +568,7 @@ class _VoucherTabViewState extends State<VoucherTabView> {
             ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _showApplyVoucherDialog(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFC49A70),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -409,15 +583,21 @@ class _VoucherTabViewState extends State<VoucherTabView> {
         const Text('Ưu đãi giao hàng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
         const SizedBox(height: 12),
 
-        // Thẻ Ưu đãi (Có răng cưa nét đứt)
         _OfferTicketCard(
           onTap: () => _showOfferDetailsSheet(context),
         ),
+
+        if (_isVoucherAdded) ...[
+          const SizedBox(height: 12),
+          const Text('Ưu đãi sản phẩm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+          const SizedBox(height: 12),
+          // Bấm vào thẻ Sản phẩm gọi hàm _showProductOfferDetailsSheet
+          _ProductOfferTicketCard(onTap: () => _showProductOfferDetailsSheet(context)), 
+        ],
       ],
     );
   }
 
-  // ---------- GIAO DIỆN: ĐỔI NỐT NHẠC ----------
   Widget _buildExchangeSection() {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -485,9 +665,262 @@ class _VoucherTabViewState extends State<VoucherTabView> {
   }
 }
 
+// =========================================================================
+// TAB 2: KHÔNG KHẢ DỤNG
+// =========================================================================
+class _UnavailableTabView extends StatelessWidget {
+  const _UnavailableTabView();
+
+  void _showBirthdayDetailsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.only(top: 10, left: 24, right: 24, bottom: 40),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Chi tiết ưu đãi', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  IconButton(icon: const Icon(Icons.close, color: Colors.grey, size: 28), onPressed: () => Navigator.pop(context)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text('Chương trình tặng bánh sinh nhật', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFB57D52))),
+              const SizedBox(height: 24),
+              const Text('Thời hạn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const SizedBox(height: 4),
+              const Text('10/09/2025', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFFB57D52))),
+              const SizedBox(height: 20),
+              const Text('Mô tả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const SizedBox(height: 8),
+              const Text(
+                'Happy Chill Birthday! Mừng Đồng Chill Huỳnh Quốc Anh thêm tuổi mới, Phê La dành tặng bạn 01 phần Bánh Ngọt bất kỳ, mã E-Voucher L8YPL8WX, được sử dụng từ 26/08/2025 đến 10/09/2025. Bạn vui lòng đưa mã E-Voucher cho thu ngân chúng mình trước khi gọi món, để liên hoan tiệc sinh nhật cùng Phê La. Thổi nến, cắt bánh, cùng Phê La đón tuổi mới thật chill nha!',
+                style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      physics: const BouncingScrollPhysics(),
+      children: [
+        _BirthdayTicketCard(
+          onTap: () => _showBirthdayDetailsSheet(context),
+        ),
+      ],
+    );
+  }
+}
+
 // ================= CÁC WIDGET THẺ VÉ (TICKET CARDS) =================
 
-// 1. Thẻ Ưu đãi Giao hàng (Màu Be nhạt)
+class _ProductOfferTicketCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ProductOfferTicketCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      height: 135, 
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 106,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8D5C4), 
+                      borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.style_outlined, size: 48, color: Color(0xFFB57D52)), 
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Chill đãi từ Phê La - Specialty Tea & Coffee', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tặng 01 Thức Uống Đặc Sản (thuộc nhóm Trà Sữa/ Cà Phê), tối đa 54,000VNĐ.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.3),
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          const Text('HSD: 22/08/2026', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9BA674))),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Positioned(
+                left: 102, 
+                top: 0,
+                bottom: 0,
+                child: SizedBox(
+                  width: 8,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final boxHeight = constraints.constrainHeight();
+                      const dashHeight = 8.0;
+                      final dashCount = (boxHeight / (1.5 * dashHeight)).floor();
+                      return Flex(
+                        direction: Axis.vertical,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(dashCount, (_) {
+                          return Container(
+                            width: 8, height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE8DDCB), 
+                              shape: BoxShape.circle,
+                            ),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BirthdayTicketCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _BirthdayTicketCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      height: 120, 
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 106,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8D5C4), 
+                      borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.discount_outlined, size: 48, color: Color(0xFFB57D52)), 
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Chương trình tặng bánh sinh nhật', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Happy Chill Birthday! Mừng Đồng Chill Huỳnh Quốc Anh thêm tuổi mới, Phê La...',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.3),
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('HSD: 10/09/2025', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9BA674))),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Positioned(
+                left: 102, 
+                top: 0,
+                bottom: 0,
+                child: SizedBox(
+                  width: 8,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final boxHeight = constraints.constrainHeight();
+                      const dashHeight = 8.0;
+                      final dashCount = (boxHeight / (1.5 * dashHeight)).floor();
+                      return Flex(
+                        direction: Axis.vertical,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(dashCount, (_) {
+                          return Container(
+                            width: 8, height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE8DDCB), 
+                              shape: BoxShape.circle,
+                            ),
+                          );
+                        }),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _OfferTicketCard extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -541,9 +974,8 @@ class _OfferTicketCard extends StatelessWidget {
                   )
                 ],
               ),
-              // Kỹ thuật đục lỗ tạo nét đứt (Chèn hình tròn giả lập màu nền app đè lên ranh giới)
               Positioned(
-                left: 102, // Đặt đè ngay tại điểm giao nhau giữa 2 phần
+                left: 102, 
                 top: 0,
                 bottom: 0,
                 child: SizedBox(
@@ -560,7 +992,7 @@ class _OfferTicketCard extends StatelessWidget {
                           return Container(
                             width: 8, height: 8,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFE8DDCB), // Màu mô phỏng nền ứng dụng
+                              color: Color(0xFFE8DDCB), 
                               shape: BoxShape.circle,
                             ),
                           );
@@ -578,7 +1010,6 @@ class _OfferTicketCard extends StatelessWidget {
   }
 }
 
-// 2. Thẻ Đổi Nốt Nhạc (Màu Nâu)
 class _TicketVoucherCard extends StatelessWidget {
   final String title;
   final String value;
@@ -614,7 +1045,7 @@ class _TicketVoucherCard extends StatelessWidget {
                   Container(
                     width: 120,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFC08955), // Màu nâu chuẩn xác y hình image_9ece1b.png
+                      color: Color(0xFFC08955), 
                       borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
                     ),
                     child: Stack(
@@ -623,12 +1054,12 @@ class _TicketVoucherCard extends StatelessWidget {
                         Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center, // CANH GIỮA HOÀN HẢO
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(value, style: const TextStyle(fontSize: 46, fontWeight: FontWeight.bold, color: Colors.white, height: 1.0)),
                               const SizedBox(width: 2),
                               const Column(
-                                mainAxisSize: MainAxisSize.min, // ĐIỂM QUAN TRỌNG ĐỂ CANH GIỮA
+                                mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(".000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, height: 1.0)),
@@ -657,9 +1088,8 @@ class _TicketVoucherCard extends StatelessWidget {
                   )
                 ],
               ),
-              // Kỹ thuật đục lỗ tạo nét đứt (Chèn hình tròn giả lập màu nền app đè lên ranh giới)
               Positioned(
-                left: 116, // Đặt đè ngay tại điểm giao nhau giữa 2 phần (120 - 4 = 116)
+                left: 116, 
                 top: 0,
                 bottom: 0,
                 child: SizedBox(
@@ -676,7 +1106,7 @@ class _TicketVoucherCard extends StatelessWidget {
                           return Container(
                             width: 8, height: 8,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFE8DDCB), // Màu mô phỏng nền ứng dụng
+                              color: Color(0xFFE8DDCB), 
                               shape: BoxShape.circle,
                             ),
                           );
