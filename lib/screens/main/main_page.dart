@@ -4,8 +4,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../routes/app_routes.dart';
+import '../../models/address.dart';
 import '../../services/user_profile_service.dart';
 import '../profile/profile_page.dart';
+import '../profile/saved_addresses_page.dart';
 import 'notification_page.dart';
 import 'order_page.dart';
 import '../order/order_confirmation_page.dart';
@@ -892,6 +895,7 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
   static const _fakePickupAddress = 'Phê La - 88 Đại lộ Mây Trắng';
 
   _OrderMethod _selectedMethod = _OrderMethod.delivery;
+  String _selectedDeliveryAddress = _fakeDeliveryAddress;
 
   String get _title {
     return _selectedMethod == _OrderMethod.delivery
@@ -901,7 +905,7 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
 
   String get _address {
     return _selectedMethod == _OrderMethod.delivery
-        ? _fakeDeliveryAddress
+        ? _selectedDeliveryAddress
         : _fakePickupAddress;
   }
 
@@ -916,14 +920,37 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) {
-        return _OrderMethodSheet(selectedMethod: _selectedMethod);
+      builder: (sheetContext) {
+        return _OrderMethodSheet(
+          selectedMethod: _selectedMethod,
+          deliveryAddress: _selectedDeliveryAddress,
+          onEditDelivery: () {
+            Navigator.pop(sheetContext);
+            _selectSavedAddress();
+          },
+        );
       },
     );
 
     if (selected != null && mounted) {
       setState(() {
         _selectedMethod = selected;
+      });
+    }
+  }
+
+  Future<void> _selectSavedAddress() async {
+    final selected = await Navigator.push<Address>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SavedAddressesPage(selectionMode: true),
+      ),
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _selectedMethod = _OrderMethod.delivery;
+        _selectedDeliveryAddress = selected.address;
       });
     }
   }
@@ -982,8 +1009,14 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
 
 class _OrderMethodSheet extends StatelessWidget {
   final _OrderMethod selectedMethod;
+  final String deliveryAddress;
+  final VoidCallback onEditDelivery;
 
-  const _OrderMethodSheet({required this.selectedMethod});
+  const _OrderMethodSheet({
+    required this.selectedMethod,
+    required this.deliveryAddress,
+    required this.onEditDelivery,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1036,10 +1069,11 @@ class _OrderMethodSheet extends StatelessWidget {
           const SizedBox(height: 16),
           _OrderMethodOption(
             title: 'Giao hàng tận nơi',
-            address: _DeliveryBoxState._fakeDeliveryAddress,
+            address: deliveryAddress,
             icon: Icons.local_shipping_outlined,
             isSelected: selectedMethod == _OrderMethod.delivery,
             onTap: () => Navigator.pop(context, _OrderMethod.delivery),
+            onEdit: onEditDelivery,
           ),
           const SizedBox(height: 10),
           _OrderMethodOption(
@@ -1048,6 +1082,7 @@ class _OrderMethodSheet extends StatelessWidget {
             icon: Icons.local_mall_outlined,
             isSelected: selectedMethod == _OrderMethod.pickup,
             onTap: () => Navigator.pop(context, _OrderMethod.pickup),
+            onEdit: () => Navigator.pushNamed(context, AppRoutes.store),
           ),
         ],
       ),
@@ -1061,6 +1096,7 @@ class _OrderMethodOption extends StatelessWidget {
   final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
 
   const _OrderMethodOption({
     required this.title,
@@ -1068,6 +1104,7 @@ class _OrderMethodOption extends StatelessWidget {
     required this.icon,
     required this.isSelected,
     required this.onTap,
+    required this.onEdit,
   });
 
   @override
@@ -1126,10 +1163,14 @@ class _OrderMethodOption extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(
-                Icons.edit_outlined,
-                color: Color(0xFFB88455),
-                size: 28,
+              IconButton(
+                tooltip: 'Chỉnh sửa',
+                onPressed: onEdit,
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFFB88455),
+                  size: 28,
+                ),
               ),
             ],
           ),

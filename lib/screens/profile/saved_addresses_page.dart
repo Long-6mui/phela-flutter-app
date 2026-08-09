@@ -5,7 +5,9 @@ import '../../services/address_service.dart';
 import '../../theme/app_colors.dart';
 
 class SavedAddressesPage extends StatefulWidget {
-  const SavedAddressesPage({super.key});
+  final bool selectionMode;
+
+  const SavedAddressesPage({super.key, this.selectionMode = false});
 
   @override
   State<SavedAddressesPage> createState() => _SavedAddressesPageState();
@@ -37,7 +39,11 @@ class _SavedAddressesPageState extends State<SavedAddressesPage> {
                     child: Text(
                       'Địa chỉ đã lưu',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.brown, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: AppColors.brown,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -51,24 +57,44 @@ class _SavedAddressesPageState extends State<SavedAddressesPage> {
                   children: [
                     const Text(
                       'Địa chỉ đã lưu',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.brown),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.brown,
+                      ),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.brown,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: () async {
-                        final result = await Navigator.pushNamed(context, AppRoutes.addAddress);
+                        final result = await Navigator.pushNamed(
+                          context,
+                          AppRoutes.addAddress,
+                        );
                         if (result == true && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã thêm địa chỉ mới.')),
+                            const SnackBar(
+                              content: Text('Đã thêm địa chỉ mới.'),
+                            ),
                           );
                         }
                       },
-                      child: const Text('Thêm', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Thêm',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -97,7 +123,10 @@ class _SavedAddressesPageState extends State<SavedAddressesPage> {
                         child: Center(
                           child: Text(
                             'Không có dữ liệu',
-                            style: TextStyle(fontSize: 14, color: AppColors.textGrey),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textGrey,
+                            ),
                           ),
                         ),
                       ),
@@ -106,84 +135,119 @@ class _SavedAddressesPageState extends State<SavedAddressesPage> {
 
                   return Column(
                     children: addresses.map((address) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20).copyWith(bottom: 12),
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 18,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${address.recipientName} • ${address.phone}',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.brown),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    address.address,
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textGrey, height: 1.5),
-                                  ),
-                                  if (address.note.isNotEmpty) ...[
-                                    const SizedBox(height: 10),
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: widget.selectionMode
+                            ? () => Navigator.pop(context, address)
+                            : null,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                          ).copyWith(bottom: 12),
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      address.note,
-                                      style: const TextStyle(fontSize: 13, color: AppColors.textGrey),
+                                      '${address.recipientName} • ${address.phone}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.brown,
+                                      ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      address.address,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textGrey,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    if (address.note.isNotEmpty) ...[
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        address.note,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.textGrey,
+                                        ),
+                                      ),
+                                    ],
                                   ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  if (address.isDefault)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.lightBeige,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Text(
+                                        'Mặc định',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.brown,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 14),
+                                  InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () async {
+                                      final result = await Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.editAddress,
+                                        arguments: address,
+                                      );
+                                      if (result == true && context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Đã cập nhật địa chỉ.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Icon(
+                                        Icons.edit_outlined,
+                                        color: AppColors.orange,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                if (address.isDefault)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.lightBeige,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: const Text(
-                                      'Mặc định',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brown),
-                                    ),
-                                  ),
-                                const SizedBox(height: 14),
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: () async {
-                                    final result = await Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.editAddress,
-                                      arguments: address,
-                                    );
-                                    if (result == true && context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Đã cập nhật địa chỉ.')),
-                                      );
-                                    }
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Icon(Icons.edit_outlined, color: AppColors.orange),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     }).toList(),
