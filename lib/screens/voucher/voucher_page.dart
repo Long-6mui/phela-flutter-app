@@ -65,6 +65,62 @@ class _VoucherTabViewState extends State<VoucherTabView> {
   bool isOfferSelected = true; 
   bool _isVoucherAdded = false; 
 
+  // Hàm hiển thị thanh thông báo lỗi màu đỏ ở sát mép trên màn hình
+  void _showErrorBanner(BuildContext context) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+    bool isRemoved = false;
+
+    void removeOverlay() {
+      if (!isRemoved) {
+        entry.remove();
+        isRemoved = true;
+      }
+    }
+
+    entry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top, // Hiện ngay dưới thanh pin/wifi
+        left: 0,
+        right: 0,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: const Color(0xFFD32F2F), // Màu đỏ lỗi chuẩn Material
+            child: Row(
+              children: [
+                const Icon(Icons.info, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Không đủ điểm để đổi.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: removeOverlay,
+                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
+
+    // Tự động tắt sau 3 giây
+    Future.delayed(const Duration(seconds: 3), () {
+      removeOverlay();
+    });
+  }
+
   void _showApplyVoucherDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -168,8 +224,10 @@ class _VoucherTabViewState extends State<VoucherTabView> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
+                          // Chỉ đóng cái Dialog hỏi xác nhận
                           Navigator.pop(context); 
-                          Navigator.pop(context); 
+                          // Và hiện cái thông báo lỗi màu đỏ (Vì giả lập hiện tại là không đủ điểm)
+                          _showErrorBanner(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFB57D52),
@@ -237,7 +295,6 @@ class _VoucherTabViewState extends State<VoucherTabView> {
     );
   }
 
-  // Bảng chi tiết cho Voucher Sản phẩm (Chill đãi từ Phê La)
   void _showProductOfferDetailsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -245,7 +302,7 @@ class _VoucherTabViewState extends State<VoucherTabView> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9), // Tối đa 90% màn hình
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9), 
           padding: const EdgeInsets.only(top: 10, left: 24, right: 24, bottom: 24),
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -591,7 +648,6 @@ class _VoucherTabViewState extends State<VoucherTabView> {
           const SizedBox(height: 12),
           const Text('Ưu đãi sản phẩm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
           const SizedBox(height: 12),
-          // Bấm vào thẻ Sản phẩm gọi hàm _showProductOfferDetailsSheet
           _ProductOfferTicketCard(onTap: () => _showProductOfferDetailsSheet(context)), 
         ],
       ],
