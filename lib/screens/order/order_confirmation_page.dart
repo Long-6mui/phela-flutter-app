@@ -22,12 +22,26 @@ class OrderConfirmationItem {
 class OrderConfirmationPage extends StatefulWidget {
   final List<OrderConfirmationItem> items;
   final int subtotal;
+  final String recipientName;
+  final String recipientPhone;
+  final String deliveryAddress;
+  final String storeName;
+  final String storePhone;
+  final String storeAddress;
+  final bool isPickup;
   final VoidCallback onConfirmed;
 
   const OrderConfirmationPage({
     super.key,
     required this.items,
     required this.subtotal,
+    required this.recipientName,
+    required this.recipientPhone,
+    required this.deliveryAddress,
+    required this.storeName,
+    required this.storePhone,
+    required this.storeAddress,
+    required this.isPickup,
     required this.onConfirmed,
   });
 
@@ -36,10 +50,10 @@ class OrderConfirmationPage extends StatefulWidget {
 }
 
 class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
-  static const _deliveryFee = 18000;
   String _paymentMethod = 'MoMo';
   bool _requestInvoice = false;
 
+  int get _deliveryFee => widget.isPickup ? 0 : 18000;
   int get _total => widget.subtotal + _deliveryFee;
 
   @override
@@ -68,9 +82,21 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
         padding: const EdgeInsets.only(bottom: 120),
         children: [
           const _SectionDivider(),
-          _DeliverySection(),
+          _DeliverySection(
+            title: widget.isPickup ? 'Đến lấy tại' : 'Giao hàng tận nơi',
+            recipientName: widget.isPickup
+                ? widget.storeName
+                : widget.recipientName,
+            recipientPhone: widget.isPickup
+                ? widget.storePhone
+                : widget.recipientPhone,
+            deliveryAddress: widget.isPickup
+                ? widget.storeAddress
+                : widget.deliveryAddress,
+            isPickup: widget.isPickup,
+          ),
           const _SectionDivider(),
-          const _StoreSection(),
+          _StoreSection(storeName: widget.storeName),
           const _SectionDivider(),
           _ProductsSection(items: widget.items),
           const _SectionDivider(),
@@ -229,6 +255,20 @@ class OrderSuccessPage extends StatelessWidget {
 }
 
 class _DeliverySection extends StatelessWidget {
+  final String title;
+  final String recipientName;
+  final String recipientPhone;
+  final String deliveryAddress;
+  final bool isPickup;
+
+  const _DeliverySection({
+    required this.title,
+    required this.recipientName,
+    required this.recipientPhone,
+    required this.deliveryAddress,
+    required this.isPickup,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -236,48 +276,50 @@ class _DeliverySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeader(title: 'Giao hàng tận nơi', action: 'Thay đổi'),
+          _SectionHeader(title: title, action: 'Thay đổi'),
           const SizedBox(height: 18),
-          const Text(
-            'Nguyễn Minh Anh',
-            style: TextStyle(
+          Text(
+            recipientName,
+            style: const TextStyle(
               color: _brandColor,
               fontSize: 19,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 3),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Text(
-                  '0901 234 567\n128 Nguyễn Văn Cừ, Phường 4, Quận 5, Hồ Chí Minh',
-                  style: TextStyle(fontSize: 17, height: 1.4),
+                  '$recipientPhone\n$deliveryAddress',
+                  style: const TextStyle(fontSize: 17, height: 1.4),
                 ),
               ),
-              Icon(Icons.chevron_right, color: _brandColor),
+              const Icon(Icons.chevron_right, color: _brandColor),
             ],
           ),
-          const SizedBox(height: 14),
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Thêm hướng dẫn giao hàng',
-              hintStyle: const TextStyle(color: Colors.black38, fontSize: 17),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 15,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Color(0xFFE8D7C4)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: _brandColor),
-                borderRadius: BorderRadius.circular(10),
+          if (!isPickup) ...[
+            const SizedBox(height: 14),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Thêm hướng dẫn giao hàng',
+                hintStyle: const TextStyle(color: Colors.black38, fontSize: 17),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 15,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFFE8D7C4)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: _brandColor),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -285,33 +327,35 @@ class _DeliverySection extends StatelessWidget {
 }
 
 class _StoreSection extends StatelessWidget {
-  const _StoreSection();
+  final String storeName;
+
+  const _StoreSection({required this.storeName});
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(18, 20, 18, 22),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Từ cửa hàng',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Text(
-                  'Phê La - 98 Võ Văn Tần',
-                  style: TextStyle(
+                  storeName,
+                  style: const TextStyle(
                     color: _brandColor,
                     fontSize: 19,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: _brandColor),
+              const Icon(Icons.chevron_right, color: _brandColor),
             ],
           ),
         ],

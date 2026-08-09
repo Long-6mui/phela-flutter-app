@@ -4,11 +4,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../routes/app_routes.dart';
 import '../../models/address.dart';
+import '../../services/address_service.dart';
+import '../../services/store_selection_service.dart';
 import '../../services/user_profile_service.dart';
 import '../profile/profile_page.dart';
 import '../profile/saved_addresses_page.dart';
+import '../store/store_list_page.dart';
 import 'notification_page.dart';
 import 'order_page.dart';
 import '../order/order_confirmation_page.dart';
@@ -44,6 +46,8 @@ class _MainPageState extends State<MainPage> {
 
   void _openOrderConfirmation([CartState? selectedCart]) {
     final cart = selectedCart ?? CartController.cartNotifier.value;
+    final deliveryAddress = AddressService.selectedAddress;
+    final selectedStore = StoreSelectionService.selectedStore;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -60,6 +64,17 @@ class _MainPageState extends State<MainPage> {
               )
               .toList(growable: false),
           subtotal: cart.totalPrice,
+          recipientName: deliveryAddress?.recipientName ?? 'Nguyễn Minh Anh',
+          recipientPhone: deliveryAddress?.phone ?? '0901 234 567',
+          deliveryAddress:
+              deliveryAddress?.address ??
+              '128 Nguyễn Văn Cừ, Phường 4, Quận 5, Hồ Chí Minh',
+          storeName: selectedStore?.name ?? 'Phê La - 98 Võ Văn Tần',
+          storePhone: selectedStore?.phone ?? '1900 3013',
+          storeAddress:
+              selectedStore?.address ??
+              '98 Võ Văn Tần, Phường 6, Quận 3, Hồ Chí Minh',
+          isPickup: StoreSelectionService.isPickup,
           onConfirmed: CartController.clearCart,
         ),
       ),
@@ -896,6 +911,7 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
 
   _OrderMethod _selectedMethod = _OrderMethod.delivery;
   String _selectedDeliveryAddress = _fakeDeliveryAddress;
+  String _selectedPickupStore = _fakePickupAddress;
 
   String get _title {
     return _selectedMethod == _OrderMethod.delivery
@@ -906,7 +922,7 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
   String get _address {
     return _selectedMethod == _OrderMethod.delivery
         ? _selectedDeliveryAddress
-        : _fakePickupAddress;
+        : _selectedPickupStore;
   }
 
   IconData get _icon {
@@ -924,9 +940,14 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
         return _OrderMethodSheet(
           selectedMethod: _selectedMethod,
           deliveryAddress: _selectedDeliveryAddress,
+          pickupAddress: _selectedPickupStore,
           onEditDelivery: () {
             Navigator.pop(sheetContext);
             _selectSavedAddress();
+          },
+          onEditPickup: () {
+            Navigator.pop(sheetContext);
+            _selectStore();
           },
         );
       },
@@ -936,6 +957,7 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
       setState(() {
         _selectedMethod = selected;
       });
+      StoreSelectionService.setPickup(selected == _OrderMethod.pickup);
     }
   }
 
@@ -952,6 +974,29 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
         _selectedMethod = _OrderMethod.delivery;
         _selectedDeliveryAddress = selected.address;
       });
+      AddressService.selectAddress(selected);
+      StoreSelectionService.setPickup(false);
+    }
+  }
+
+  Future<void> _selectStore() async {
+    final selected = await Navigator.push<StoreLocation>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const StoreListPage(selectionMode: true),
+      ),
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _selectedMethod = _OrderMethod.pickup;
+        _selectedPickupStore = selected.name;
+      });
+      StoreSelectionService.selectStore(
+        name: selected.name,
+        phone: selected.phone,
+        address: selected.address,
+      );
     }
   }
 
@@ -1010,12 +1055,16 @@ class _DeliveryBoxState extends State<_DeliveryBox> {
 class _OrderMethodSheet extends StatelessWidget {
   final _OrderMethod selectedMethod;
   final String deliveryAddress;
+  final String pickupAddress;
   final VoidCallback onEditDelivery;
+  final VoidCallback onEditPickup;
 
   const _OrderMethodSheet({
     required this.selectedMethod,
     required this.deliveryAddress,
+    required this.pickupAddress,
     required this.onEditDelivery,
+    required this.onEditPickup,
   });
 
   @override
@@ -1078,11 +1127,11 @@ class _OrderMethodSheet extends StatelessWidget {
           const SizedBox(height: 10),
           _OrderMethodOption(
             title: 'Đến lấy tại',
-            address: _DeliveryBoxState._fakePickupAddress,
+            address: pickupAddress,
             icon: Icons.local_mall_outlined,
             isSelected: selectedMethod == _OrderMethod.pickup,
             onTap: () => Navigator.pop(context, _OrderMethod.pickup),
-            onEdit: () => Navigator.pushNamed(context, AppRoutes.store),
+            onEdit: onEditPickup,
           ),
         ],
       ),
