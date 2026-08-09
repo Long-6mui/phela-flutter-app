@@ -8,8 +8,9 @@ import '../../services/user_profile_service.dart';
 import '../profile/profile_page.dart';
 import 'notification_page.dart';
 import 'order_page.dart';
+import '../order/order_confirmation_page.dart';
 import '../voucher/voucher_page.dart'; // <-- Import màn hình Voucher
-import '../qr/qr_page.dart';           // <-- Import màn hình QR
+import '../qr/qr_page.dart'; // <-- Import màn hình QR
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key, this.initialIndex = 0});
@@ -32,11 +33,50 @@ class _MainPageState extends State<MainPage> {
   // Đã gỡ từ khóa const ở List và thay thế trang Ưu đãi
   final List<Widget> pages = [
     const HomePage(),
-    const OrderPage(),
-    VoucherPage(), // <-- Màn hình Ưu đãi đã được tích hợp
+    const OrderPage(onOpenProduct: _openOrderProduct),
+    const VoucherPage(), // <-- Màn hình Ưu đãi đã được tích hợp
     const ProfilePage(),
     QRPage(),
   ];
+
+  void _openOrderConfirmation([CartState? selectedCart]) {
+    final cart = selectedCart ?? CartController.cartNotifier.value;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OrderConfirmationPage(
+          items: cart.items
+              .map(
+                (line) => OrderConfirmationItem(
+                  name: line.item.name,
+                  imagePath: line.item.imagePath,
+                  unitPrice: _parsePrice(line.item.price),
+                  quantity: line.quantity,
+                  option: line.option,
+                ),
+              )
+              .toList(growable: false),
+          subtotal: cart.totalPrice,
+          onConfirmed: CartController.clearCart,
+        ),
+      ),
+    );
+  }
+
+  void _showCart() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _CartSheet(
+        onOrderPressed: () {
+          final cart = CartController.cartNotifier.value;
+          Navigator.pop(sheetContext);
+          _openOrderConfirmation(cart);
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,23 +85,19 @@ class _MainPageState extends State<MainPage> {
       body: Stack(
         children: [
           // Thay thế pages[currentIndex] bằng khối này để không bị đơ app:
-          IndexedStack(
-            index: currentIndex,
-            children: pages,
-          ),
+          IndexedStack(index: currentIndex, children: pages),
 
-          // Thêm điều kiện && currentIndex != 4 
+          // Thêm điều kiện && currentIndex != 4
           if (currentIndex != 3 && currentIndex != 4)
             Positioned(
               left: 0,
               right: 0,
-              bottom: 82,
+              // Kéo nền giỏ hàng xuống sau BottomAppBar để lấp kín vùng
+              // quanh nút QR, đồng thời tăng chiều cao để mép trên cao hơn.
+              bottom: 68,
               child: _CartOrderBar(
-                onOrderPressed: () {
-                  setState(() {
-                    currentIndex = 1;
-                  });
-                },
+                onCartPressed: _showCart,
+                onOrderPressed: _openOrderConfirmation,
               ),
             ),
         ],
@@ -76,7 +112,11 @@ class _MainPageState extends State<MainPage> {
             currentIndex = 4;
           });
         },
-        child: const Icon(Icons.qr_code_2, color: Color.fromARGB(255, 180, 146, 106), size: 34),
+        child: const Icon(
+          Icons.qr_code_2,
+          color: Color.fromARGB(255, 180, 146, 106),
+          size: 34,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: ClipRRect(
@@ -180,15 +220,37 @@ class _AppBackground extends StatelessWidget {
 class CartState {
   final int totalQuantity;
   final int totalPrice;
+  final List<CartLine> items;
 
-  const CartState({required this.totalQuantity, required this.totalPrice});
+  const CartState({
+    required this.totalQuantity,
+    required this.totalPrice,
+    this.items = const [],
+  });
 
-  CartState copyWith({int? totalQuantity, int? totalPrice}) {
+  CartState copyWith({
+    int? totalQuantity,
+    int? totalPrice,
+    List<CartLine>? items,
+  }) {
     return CartState(
       totalQuantity: totalQuantity ?? this.totalQuantity,
       totalPrice: totalPrice ?? this.totalPrice,
+      items: items ?? this.items,
     );
   }
+}
+
+class CartLine {
+  final DrinkItem item;
+  final int quantity;
+  final String option;
+
+  const CartLine({
+    required this.item,
+    required this.quantity,
+    required this.option,
+  });
 }
 
 class CartController {
@@ -196,18 +258,62 @@ class CartController {
     const CartState(totalQuantity: 0, totalPrice: 0),
   );
 
-  static void addItem(DrinkItem item, int quantity) {
+  static void addItem(DrinkItem item, int quantity, {String option = ''}) {
     final current = cartNotifier.value;
     final itemPrice = _parsePrice(item.price);
+    final updatedItems = List<CartLine>.from(current.items);
+    final existingIndex = updatedItems.indexWhere(
+      (line) => line.item.name == item.name && line.option == option,
+    );
+
+    if (existingIndex >= 0) {
+      final existing = updatedItems[existingIndex];
+      updatedItems[existingIndex] = CartLine(
+        item: item,
+        quantity: existing.quantity + quantity,
+        option: option,
+      );
+    } else {
+      updatedItems.add(
+        CartLine(item: item, quantity: quantity, option: option),
+      );
+    }
 
     cartNotifier.value = current.copyWith(
       totalQuantity: current.totalQuantity + quantity,
       totalPrice: current.totalPrice + itemPrice * quantity,
+      items: List.unmodifiable(updatedItems),
     );
   }
 
   static void clearCart() {
     cartNotifier.value = const CartState(totalQuantity: 0, totalPrice: 0);
+  }
+
+  static void changeQuantity(int index, int change) {
+    final current = cartNotifier.value;
+    if (index < 0 || index >= current.items.length || change == 0) return;
+
+    final updatedItems = List<CartLine>.from(current.items);
+    final line = updatedItems[index];
+    final newQuantity = line.quantity + change;
+    final itemPrice = _parsePrice(line.item.price);
+
+    if (newQuantity <= 0) {
+      updatedItems.removeAt(index);
+    } else {
+      updatedItems[index] = CartLine(
+        item: line.item,
+        quantity: newQuantity,
+        option: line.option,
+      );
+    }
+
+    cartNotifier.value = CartState(
+      totalQuantity: current.totalQuantity + change,
+      totalPrice: current.totalPrice + itemPrice * change,
+      items: List.unmodifiable(updatedItems),
+    );
   }
 }
 
@@ -1560,9 +1666,13 @@ class _ImageErrorBox extends StatelessWidget {
 }
 
 class _CartOrderBar extends StatelessWidget {
+  final VoidCallback onCartPressed;
   final VoidCallback onOrderPressed;
 
-  const _CartOrderBar({required this.onOrderPressed});
+  const _CartOrderBar({
+    required this.onCartPressed,
+    required this.onOrderPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1574,8 +1684,8 @@ class _CartOrderBar extends StatelessWidget {
         }
 
         return Container(
-          height: 78,
-          padding: const EdgeInsets.fromLTRB(26, 10, 26, 10),
+          height: 106,
+          padding: const EdgeInsets.fromLTRB(26, 10, 26, 26),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
@@ -1589,40 +1699,47 @@ class _CartOrderBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(
-                    Icons.shopping_cart_outlined,
-                    size: 36,
-                    color: Color(0xFFC08043),
-                  ),
-                  Positioned(
-                    top: -9,
-                    right: -9,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 3,
+              InkWell(
+                onTap: onCartPressed,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 34,
+                        color: Color(0xFFC08043),
                       ),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${cart.totalQuantity}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      Positioned(
+                        top: -9,
+                        right: -9,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${cart.totalQuantity}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
               Expanded(
                 child: Text(
@@ -1631,17 +1748,17 @@ class _CartOrderBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFFC08043),
-                    fontSize: 25,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
 
               SizedBox(
-                height: 52,
-                width: 160,
+                height: 44,
+                width: 140,
                 child: ElevatedButton(
                   onPressed: onOrderPressed,
                   style: ElevatedButton.styleFrom(
@@ -1649,13 +1766,13 @@ class _CartOrderBar extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(11),
                     ),
                   ),
                   child: const Text(
                     'ĐẶT HÀNG',
                     style: TextStyle(
-                      fontSize: 21,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                     ),
@@ -1666,6 +1783,265 @@ class _CartOrderBar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _CartSheet extends StatelessWidget {
+  final VoidCallback onOrderPressed;
+
+  const _CartSheet({required this.onOrderPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<CartState>(
+      valueListenable: CartController.cartNotifier,
+      builder: (context, cart, child) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 9),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8E8E8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 13, 12, 12),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Giỏ hàng',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.close,
+                        size: 31,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: cart.items.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: Text('Giỏ hàng đang trống'),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+                        itemCount: cart.items.length,
+                        separatorBuilder: (_, _) => const Divider(height: 24),
+                        itemBuilder: (context, index) => _CartSheetItem(
+                          line: cart.items[index],
+                          index: index,
+                        ),
+                      ),
+              ),
+              Container(
+                color: const Color(0xFFC4874B),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  14,
+                  20,
+                  14 + MediaQuery.paddingOf(context).bottom,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${cart.totalQuantity} sản phẩm',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            '${_formatMoney(cart.totalPrice)}đ',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 178,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: cart.items.isEmpty ? null : onOrderPressed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF11110E),
+                          foregroundColor: const Color(0xFFD8A46F),
+                          disabledBackgroundColor: Colors.black38,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'ĐẶT HÀNG',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CartSheetItem extends StatelessWidget {
+  final CartLine line;
+  final int index;
+
+  const _CartSheetItem({required this.line, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(7),
+          child: SizedBox(
+            width: 86,
+            height: 86,
+            child: Image.asset(
+              line.item.imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const ColoredBox(
+                color: Color(0xFFE8D2B8),
+                child: Icon(Icons.local_cafe, color: Color(0xFFC08043)),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      line.item.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.edit_outlined,
+                    color: Color(0xFFC08043),
+                    size: 28,
+                  ),
+                ],
+              ),
+              if (line.option.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(
+                  '• ${line.option}',
+                  style: const TextStyle(fontSize: 15, height: 1.35),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${_formatMoney(_parsePrice(line.item.price))}đ',
+                      style: const TextStyle(
+                        color: Color(0xFFC08043),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  _CartQuantityButton(
+                    icon: Icons.remove,
+                    onPressed: () => CartController.changeQuantity(index, -1),
+                  ),
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      '${line.quantity}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  _CartQuantityButton(
+                    icon: Icons.add,
+                    onPressed: () => CartController.changeQuantity(index, 1),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CartQuantityButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _CartQuantityButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          color: Color(0xFFC4874B),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 22),
+      ),
     );
   }
 }
@@ -1905,8 +2281,17 @@ void _openProductOptionSheet(BuildContext context, DrinkItem item) {
   );
 }
 
-void openProductOptionSheet(BuildContext context, DrinkItem item) {
-  _openProductOptionSheet(context, item);
+void _openOrderProduct(BuildContext context, OrderProductData product) {
+  _openProductOptionSheet(
+    context,
+    DrinkItem(
+      name: product.name,
+      price: _formatMoney(product.price),
+      badge: product.badge,
+      imagePath: product.imagePath,
+      description: product.description,
+    ),
+  );
 }
 
 int _parsePrice(String price) {
@@ -1998,18 +2383,13 @@ class _ProductOptionSheetState extends State<_ProductOptionSheet> {
   }
 
   void chooseProduct() {
-    final messenger = ScaffoldMessenger.of(context);
-
-    CartController.addItem(widget.item, quantity);
+    CartController.addItem(
+      widget.item,
+      quantity,
+      option: '$selectedSugar\n• $selectedTea\n• $selectedIce',
+    );
 
     Navigator.pop(context);
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Đã thêm ${widget.item.name} x$quantity vào giỏ hàng'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
   }
 
   @override

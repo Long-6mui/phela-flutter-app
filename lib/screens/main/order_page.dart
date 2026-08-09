@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 
-import 'main_page.dart';
-
 const _brand = Color(0xFFBF8248);
 const _softBrand = Color(0xFFF2E3D4);
+
+class OrderProductData {
+  final String name;
+  final int price;
+  final String imagePath;
+  final String badge;
+  final String description;
+
+  const OrderProductData({
+    required this.name,
+    required this.price,
+    required this.imagePath,
+    required this.badge,
+    required this.description,
+  });
+}
 
 class _OrderEntry {
   final String name;
@@ -11,17 +25,12 @@ class _OrderEntry {
   final String? imagePath;
   final String badge;
 
-  const _OrderEntry(
-    this.name,
-    this.price, {
-    this.imagePath,
-    this.badge = '',
-  });
+  const _OrderEntry(this.name, this.price, {this.imagePath, this.badge = ''});
 
-  DrinkItem toDrinkItem() {
-    return DrinkItem(
+  OrderProductData toProductData() {
+    return OrderProductData(
       name: name,
-      price: _money(price),
+      price: price,
       badge: badge,
       imagePath: imagePath ?? '',
       description:
@@ -39,270 +48,243 @@ class _OrderGroup {
 }
 
 const _groups = <_OrderGroup>[
-  _OrderGroup(
-    'Combo',
-    [
-      _OrderEntry(
-        'Combo Chill Độc Quyền 123K',
-        123000,
-        imagePath: 'assets/images/banners/banner_phe_la.jpg',
-      ),
-      _OrderEntry(
-        'Combo Chill Đôi Phin Giấy',
-        148000,
-        imagePath: 'assets/images/banners/banner_phe_la_2.jpg',
-      ),
-      _OrderEntry(
-        'Combo Chill Đôi Phê Truffle',
-        132000,
-        imagePath: 'assets/images/banners/banner_phe_la3.jpg',
-      ),
-      _OrderEntry(
-        'Combo Chill Phê La',
-        149000,
-        imagePath: 'assets/images/banners/banner_phe_la_4.jpg',
-      ),
-    ],
-    isCombo: true,
-  ),
-  _OrderGroup(
-    'HCM - Bánh Ngọt',
-    [
-      _OrderEntry('HCM - Bông Lan Trứng Muối', 50000),
-    ],
-  ),
-  _OrderGroup(
-    'Cà Phê',
-    [
-      _OrderEntry(
-        'Phan Xi Păng Phê Phin Đặc Sản - đá xay',
-        74000,
-        imagePath:
-            'assets/images/coffees/Phan-Xi-Pang-Phe-Phin-Dac-San-da-xay-scaled.jpg',
-        badge: 'MỚI',
-      ),
-      _OrderEntry(
-        'Đà Lạt (phiên bản mới) - cà phê',
-        54000,
-        imagePath: 'assets/images/coffees/Da-Lat-phien-ban-moi-Moi-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Phê Ô Long Bưởi Cam Vàng - cà phê',
-        54000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/Phe-O-Long-Buoi-Cam-Vang-Moi-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Phê Cappu (hạt Ethi) - Nóng',
-        59000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/8.-Phe-Cappu-hat-Colom-Ethi-Da-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Phê Ame (hạt Ethi) - Nóng',
-        50000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/6.-Phe-Ame-hat-Colom-Ethi-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Phê Nâu - cà phê',
-        39000,
-        imagePath: 'assets/images/coffees/Phe-Nau.jpg',
-      ),
-      _OrderEntry(
-        'Phê Đen - cà phê',
-        39000,
-        imagePath: 'assets/images/coffees/Phe-Den.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Syphon',
-    [
-      _OrderEntry(
-        'Mật Nhãn - Ô Long Long Nhãn Sữa',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/syphon/Mat-Nhan-O-Long-Long-Nhan-Sua-Size-La-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Ô Long Nhài Sữa - trà sữa (size Phê)',
-        54000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/syphon/O-Long-Nhai-Sua-size-La.jpg',
-      ),
-      _OrderEntry(
-        'Ô Long Sữa Phê La - trà sữa (size Phê)',
-        54000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/syphon/O-Long-Sua-Phe-La-size-La.jpg',
-      ),
-      _OrderEntry(
-        'Phong Lan - trà sữa',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/syphon/Phong-Lan-size-La.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Gọi thêm',
-    [
-      _OrderEntry(
-        'Thạch Trà Chanh Vàng',
-        15000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/topping/14489.jpg',
-      ),
-      _OrderEntry(
-        'Thạch Xíu Vani',
-        15000,
-        imagePath: 'assets/images/coffees/Thach-Xiu-Vani.jpg',
-      ),
-      _OrderEntry(
-        'Thạch Trà Đào Hồng',
-        15000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/topping/Resize-AppFood-KV-OLongDaoHong-2-09-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Thạch Ô Long Matcha',
-        15000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/topping/Thach-O-Long-Matcha-MOI-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Trân Châu Phong Lan',
-        10000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/topping/3.-Tran-Chau-Phong-Lan-scaled.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'French Press',
-    [
-      _OrderEntry(
-        'Ô Long Đào Hồng',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/French Press/Resize-AppFood-KV-OLongDaoHong-2-03-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Lụa Đào - Phiên bản Đông Chill yêu thích',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/French Press/Ver-03-Lua-Dao-Phien-ban-Dong-Chill-yeu-thich-size-LAAA.jpg',
-      ),
-      _OrderEntry(
-        'Trà Vỏ Cà Phê',
-        54000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/French Press/8-Tra-Vo-Ca-Phe.jpg',
-      ),
-      _OrderEntry(
-        'Gấm - Ô Long Vải Chanh Vàng',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/French Press/Gam-phien-ban-moi-scaled.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Moka Pot',
-    [
-      _OrderEntry(
-        'Tấm - trà sữa (size Phê)',
-        54000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/moka pot/3-Tam.jpg',
-      ),
-      _OrderEntry(
-        'Tấm - trà sữa - SIZE LAAA',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/moka pot/3-Tam.jpg',
-      ),
-      _OrderEntry(
-        'Khói B’Lao - trà sữa',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/moka pot/4-Khoi-B_Lao.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Cold Brew',
-    [
-      _OrderEntry(
-        'Sữa Chua Bông Bưởi',
-        64000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/Cold brew/Sua-Chua-Bong-Buoi-menu-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Bông Bưởi Cold Brew',
-        64000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/Cold brew/Bong-Buoi-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Si Mơ Cold Brew Ô Long Mơ Đào',
-        69000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/Cold brew/Si-Mo-Cold-Brew-O-Long-Mo-Dao.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Ô Long Matcha',
-    [
-      _OrderEntry(
-        'Matcha Phan Xi Păng - đá xay',
-        64000,
-        imagePath:
-            'assets/images/coffees/Matcha-Phan-Xi-Pang-da-xay-MOI-scaled.jpg',
-      ),
-      _OrderEntry(
-        'Matcha Coco Latte - sữa',
-        69000,
-        imagePath: 'assets/images/coffees/matcha_latte.jpg',
-      ),
-    ],
-  ),
-  _OrderGroup(
-    'Plus - Lon/ Chai tiện lợi',
-    [
-      _OrderEntry(
-        'Plus - Mật Nhãn (Ô Long Long Nhãn)',
-        108000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-Mat-Nhan-O-Long-Long-Nhan.jpg',
-      ),
-      _OrderEntry(
-        'Plus - Matcha Coco Latte',
-        108000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-Matcha-Coco-Latte.jpg',
-      ),
-      _OrderEntry(
-        'Plus - Khói B’Lao',
-        108000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-KhoiBlao.jpg',
-      ),
-      _OrderEntry(
-        'Plus - Phong Lan',
-        108000,
-        imagePath:
-            'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/PHONG-LAN-PLUS.jpg',
-      ),
-    ],
-  ),
+  _OrderGroup('Combo', [
+    _OrderEntry(
+      'Combo Chill Độc Quyền 123K',
+      123000,
+      imagePath: 'assets/images/banners/banner_phe_la.jpg',
+    ),
+    _OrderEntry(
+      'Combo Chill Đôi Phin Giấy',
+      148000,
+      imagePath: 'assets/images/banners/banner_phe_la_2.jpg',
+    ),
+    _OrderEntry(
+      'Combo Chill Đôi Phê Truffle',
+      132000,
+      imagePath: 'assets/images/banners/banner_phe_la3.jpg',
+    ),
+    _OrderEntry(
+      'Combo Chill Phê La',
+      149000,
+      imagePath: 'assets/images/banners/banner_phe_la_4.jpg',
+    ),
+  ], isCombo: true),
+  _OrderGroup('HCM - Bánh Ngọt', [
+    _OrderEntry(
+      'HCM - Bông Lan Trứng Muối',
+      50000,
+      imagePath: 'assets/images/cakes/bong_lan_trung_muoi.jpg',
+    ),
+  ]),
+  _OrderGroup('Cà Phê', [
+    _OrderEntry(
+      'Phan Xi Păng Phê Phin Đặc Sản - đá xay',
+      74000,
+      imagePath:
+          'assets/images/coffees/Phan-Xi-Pang-Phe-Phin-Dac-San-da-xay-scaled.jpg',
+      badge: 'MỚI',
+    ),
+    _OrderEntry(
+      'Đà Lạt (phiên bản mới) - cà phê',
+      54000,
+      imagePath: 'assets/images/coffees/Da-Lat-phien-ban-moi-Moi-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Phê Ô Long Bưởi Cam Vàng - cà phê',
+      54000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/Phe-O-Long-Buoi-Cam-Vang-Moi-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Phê Cappu (hạt Ethi) - Nóng',
+      59000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/8.-Phe-Cappu-hat-Colom-Ethi-Da-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Phê Ame (hạt Ethi) - Nóng',
+      50000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/6.-Phe-Ame-hat-Colom-Ethi-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Phê Nâu - cà phê',
+      39000,
+      imagePath: 'assets/images/coffees/Phe-Nau.jpg',
+    ),
+    _OrderEntry(
+      'Phê Đen - cà phê',
+      39000,
+      imagePath: 'assets/images/coffees/Phe-Den.jpg',
+    ),
+  ]),
+  _OrderGroup('Syphon', [
+    _OrderEntry(
+      'Mật Nhãn - Ô Long Long Nhãn Sữa',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/syphon/Mat-Nhan-O-Long-Long-Nhan-Sua-Size-La-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Ô Long Nhài Sữa - trà sữa (size Phê)',
+      54000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/syphon/O-Long-Nhai-Sua-size-La.jpg',
+    ),
+    _OrderEntry(
+      'Ô Long Sữa Phê La - trà sữa (size Phê)',
+      54000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/syphon/O-Long-Sua-Phe-La-size-La.jpg',
+    ),
+    _OrderEntry(
+      'Phong Lan - trà sữa',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/syphon/Phong-Lan-size-La.jpg',
+    ),
+  ]),
+  _OrderGroup('Gọi thêm', [
+    _OrderEntry(
+      'Thạch Trà Chanh Vàng',
+      15000,
+      imagePath: 'assets/images/quoc anh/hình ảnh phê la/topping/14489.jpg',
+    ),
+    _OrderEntry(
+      'Thạch Xíu Vani',
+      15000,
+      imagePath: 'assets/images/coffees/Thach-Xiu-Vani.jpg',
+    ),
+    _OrderEntry(
+      'Thạch Trà Đào Hồng',
+      15000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/topping/Resize-AppFood-KV-OLongDaoHong-2-09-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Thạch Ô Long Matcha',
+      15000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/topping/Thach-O-Long-Matcha-MOI-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Trân Châu Phong Lan',
+      10000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/topping/3.-Tran-Chau-Phong-Lan-scaled.jpg',
+    ),
+  ]),
+  _OrderGroup('French Press', [
+    _OrderEntry(
+      'Ô Long Đào Hồng',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/French Press/Resize-AppFood-KV-OLongDaoHong-2-03-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Lụa Đào - Phiên bản Đông Chill yêu thích',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/French Press/Ver-03-Lua-Dao-Phien-ban-Dong-Chill-yeu-thich-size-LAAA.jpg',
+    ),
+    _OrderEntry(
+      'Trà Vỏ Cà Phê',
+      54000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/French Press/8-Tra-Vo-Ca-Phe.jpg',
+    ),
+    _OrderEntry(
+      'Gấm - Ô Long Vải Chanh Vàng',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/French Press/Gam-phien-ban-moi-scaled.jpg',
+    ),
+  ]),
+  _OrderGroup('Moka Pot', [
+    _OrderEntry(
+      'Tấm - trà sữa (size Phê)',
+      54000,
+      imagePath: 'assets/images/quoc anh/hình ảnh phê la/moka pot/3-Tam.jpg',
+    ),
+    _OrderEntry(
+      'Tấm - trà sữa - SIZE LAAA',
+      69000,
+      imagePath: 'assets/images/quoc anh/hình ảnh phê la/moka pot/3-Tam.jpg',
+    ),
+    _OrderEntry(
+      'Khói B’Lao - trà sữa',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/moka pot/4-Khoi-B_Lao.jpg',
+    ),
+  ]),
+  _OrderGroup('Cold Brew', [
+    _OrderEntry(
+      'Sữa Chua Bông Bưởi',
+      64000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/Cold brew/Sua-Chua-Bong-Buoi-menu-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Bông Bưởi Cold Brew',
+      64000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/Cold brew/Bong-Buoi-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Si Mơ Cold Brew Ô Long Mơ Đào',
+      69000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/Cold brew/Si-Mo-Cold-Brew-O-Long-Mo-Dao.jpg',
+    ),
+  ]),
+  _OrderGroup('Ô Long Matcha', [
+    _OrderEntry(
+      'Matcha Phan Xi Păng - đá xay',
+      64000,
+      imagePath:
+          'assets/images/coffees/Matcha-Phan-Xi-Pang-da-xay-MOI-scaled.jpg',
+    ),
+    _OrderEntry(
+      'Matcha Coco Latte - sữa',
+      69000,
+      imagePath: 'assets/images/coffees/matcha_latte.jpg',
+    ),
+  ]),
+  _OrderGroup('Plus - Lon/ Chai tiện lợi', [
+    _OrderEntry(
+      'Plus - Mật Nhãn (Ô Long Long Nhãn)',
+      108000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-Mat-Nhan-O-Long-Long-Nhan.jpg',
+    ),
+    _OrderEntry(
+      'Plus - Matcha Coco Latte',
+      108000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-Matcha-Coco-Latte.jpg',
+    ),
+    _OrderEntry(
+      'Plus - Khói B’Lao',
+      108000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/Plus-KhoiBlao.jpg',
+    ),
+    _OrderEntry(
+      'Plus - Phong Lan',
+      108000,
+      imagePath:
+          'assets/images/quoc anh/hình ảnh phê la/chai tiện lợi/PHONG-LAN-PLUS.jpg',
+    ),
+  ]),
 ];
 
 class OrderPage extends StatefulWidget {
-  const OrderPage({super.key});
+  final void Function(BuildContext context, OrderProductData product)
+  onOpenProduct;
+
+  const OrderPage({super.key, required this.onOpenProduct});
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -312,10 +294,14 @@ class _OrderPageState extends State<OrderPage> {
   final _searchController = TextEditingController();
   final _contentController = ScrollController();
   final _categoryController = ScrollController();
-  final List<GlobalKey> _sectionKeys =
-      List.generate(_groups.length, (_) => GlobalKey());
-  final List<GlobalKey> _categoryKeys =
-      List.generate(_groups.length, (_) => GlobalKey());
+  final List<GlobalKey> _sectionKeys = List.generate(
+    _groups.length,
+    (_) => GlobalKey(),
+  );
+  final List<GlobalKey> _categoryKeys = List.generate(
+    _groups.length,
+    (_) => GlobalKey(),
+  );
   String _selectedCategory = 'Combo';
   bool _showSearch = false;
   bool _isJumpingToCategory = false;
@@ -353,8 +339,10 @@ class _OrderPageState extends State<OrderPage> {
     });
 
     await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
+
     final sectionContext = _sectionKeys[index].currentContext;
-    if (sectionContext != null) {
+    if (sectionContext != null && sectionContext.mounted) {
       await Scrollable.ensureVisible(
         sectionContext,
         duration: const Duration(milliseconds: 420),
@@ -452,15 +440,20 @@ class _OrderPageState extends State<OrderPage> {
                           padding: const EdgeInsets.fromLTRB(18, 26, 18, 130),
                           child: Column(
                             children: [
-                              for (var index = 0;
-                                  index < visibleGroups.length;
-                                  index++)
+                              for (
+                                var index = 0;
+                                index < visibleGroups.length;
+                                index++
+                              )
                                 _OrderSection(
-                                  key: _sectionKeys[
-                                      _groups.indexWhere((group) =>
-                                          group.title ==
-                                          visibleGroups[index].title)],
+                                  key:
+                                      _sectionKeys[_groups.indexWhere(
+                                        (group) =>
+                                            group.title ==
+                                            visibleGroups[index].title,
+                                      )],
                                   group: visibleGroups[index],
+                                  onOpenProduct: widget.onOpenProduct,
                                 ),
                             ],
                           ),
@@ -572,7 +565,7 @@ class _CategoryBar extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
         itemCount: _groups.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final title = _groups[index].title;
           final selected = title == selectedCategory;
@@ -611,8 +604,14 @@ class _CategoryBar extends StatelessWidget {
 
 class _OrderSection extends StatelessWidget {
   final _OrderGroup group;
+  final void Function(BuildContext context, OrderProductData product)
+  onOpenProduct;
 
-  const _OrderSection({super.key, required this.group});
+  const _OrderSection({
+    super.key,
+    required this.group,
+    required this.onOpenProduct,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -637,9 +636,12 @@ class _OrderSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: group.items.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                separatorBuilder: (_, _) => const SizedBox(width: 14),
                 itemBuilder: (context, index) {
-                  return _ComboCard(item: group.items[index]);
+                  return _ComboCard(
+                    item: group.items[index],
+                    onOpenProduct: onOpenProduct,
+                  );
                 },
               ),
             )
@@ -647,7 +649,7 @@ class _OrderSection extends StatelessWidget {
             ...group.items.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: _ProductRow(item: item),
+                child: _ProductRow(item: item, onOpenProduct: onOpenProduct),
               ),
             ),
         ],
@@ -658,8 +660,10 @@ class _OrderSection extends StatelessWidget {
 
 class _ComboCard extends StatelessWidget {
   final _OrderEntry item;
+  final void Function(BuildContext context, OrderProductData product)
+  onOpenProduct;
 
-  const _ComboCard({required this.item});
+  const _ComboCard({required this.item, required this.onOpenProduct});
 
   @override
   Widget build(BuildContext context) {
@@ -668,7 +672,7 @@ class _ComboCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => openProductOptionSheet(context, item.toDrinkItem()),
+        onTap: () => onOpenProduct(context, item.toProductData()),
         child: SizedBox(
           width: 185,
           child: Column(
@@ -700,10 +704,8 @@ class _ComboCard extends StatelessWidget {
                       Align(
                         alignment: Alignment.bottomRight,
                         child: _RoundAddButton(
-                          onTap: () => openProductOptionSheet(
-                            context,
-                            item.toDrinkItem(),
-                          ),
+                          onTap: () =>
+                              onOpenProduct(context, item.toProductData()),
                         ),
                       ),
                     ],
@@ -720,18 +722,20 @@ class _ComboCard extends StatelessWidget {
 
 class _ProductRow extends StatelessWidget {
   final _OrderEntry item;
+  final void Function(BuildContext context, OrderProductData product)
+  onOpenProduct;
 
-  const _ProductRow({required this.item});
+  const _ProductRow({required this.item, required this.onOpenProduct});
 
   @override
   Widget build(BuildContext context) {
-    final drink = item.toDrinkItem();
+    final product = item.toProductData();
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => openProductOptionSheet(context, drink),
+        onTap: () => onOpenProduct(context, product),
         child: SizedBox(
           height: 132,
           child: Row(
@@ -772,8 +776,7 @@ class _ProductRow extends StatelessWidget {
                             ),
                           ),
                           _RoundAddButton(
-                            onTap: () =>
-                                openProductOptionSheet(context, drink),
+                            onTap: () => onOpenProduct(context, product),
                           ),
                         ],
                       ),
@@ -802,7 +805,7 @@ class _OrderImage extends StatelessWidget {
     return Image.asset(
       path!,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const _PheLaPlaceholder(),
+      errorBuilder: (_, _, _) => const _PheLaPlaceholder(),
     );
   }
 }
@@ -871,7 +874,7 @@ class _NoProductFound extends StatelessWidget {
 
 String _money(int value) {
   return value.toString().replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'),
-        (match) => ',',
-      );
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (match) => ',',
+  );
 }
