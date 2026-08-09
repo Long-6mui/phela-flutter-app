@@ -143,7 +143,7 @@ class ProfilePage extends StatelessWidget {
                   context,
                   Icons.receipt_long,
                   'Lịch sử đặt hàng',
-                  () {},
+                  () => Navigator.pushNamed(context, AppRoutes.orderHistory),
                 ),
                 _buildMenuItem(
                   context,
@@ -166,7 +166,7 @@ class ProfilePage extends StatelessWidget {
                   context,
                   Icons.explore,
                   'Khám phá ứng dụng',
-                  () => Navigator.pushNamed(context, AppRoutes.store),
+                  () => Navigator.pushNamed(context, AppRoutes.exploreApp),
                 ),
               ]),
               const SizedBox(height: 24),

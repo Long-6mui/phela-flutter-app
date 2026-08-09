@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/address.dart';
 import '../models/product_model.dart';
 import '../models/user_profile.dart';
+import '../models/order_model.dart'; // <-- Đã thêm import cho OrderModel
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -28,7 +29,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 5, // <-- Nâng lên version 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -71,6 +72,25 @@ class DatabaseHelper {
       )
     ''');
 
+    // <-- THÊM BẢNG ORDERS
+    await db.execute('''
+      CREATE TABLE orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userEmail TEXT NOT NULL,
+        storeName TEXT NOT NULL,
+        itemName TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        totalPrice INTEGER NOT NULL,
+        orderDate TEXT NOT NULL,
+        paymentMethod TEXT NOT NULL,
+        recipientName TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        addressStr TEXT NOT NULL,
+        isPickup INTEGER NOT NULL,
+        itemsJson TEXT
+      )
+    ''');
+
     await _insertDefaultProducts(db);
   }
 
@@ -102,6 +122,35 @@ class DatabaseHelper {
           isDefault INTEGER NOT NULL
         )
       ''');
+    }
+
+    // <-- BẢN CẬP NHẬT LÊN VERSION 4: TẠO BẢNG ORDERS CHO NGƯỜI ĐÃ CÓ DB
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userEmail TEXT NOT NULL,
+        storeName TEXT NOT NULL,
+        itemName TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        totalPrice INTEGER NOT NULL,
+        orderDate TEXT NOT NULL,
+        paymentMethod TEXT NOT NULL,
+        recipientName TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        addressStr TEXT NOT NULL,
+        isPickup INTEGER NOT NULL,
+        itemsJson TEXT
+        )
+      ''');
+      
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('ALTER TABLE orders ADD COLUMN itemsJson TEXT');
+      } catch (e) {
+        // Bỏ qua nếu cột đã tồn tại
+      }
     }
   }
 
@@ -349,6 +398,36 @@ class DatabaseHelper {
       return -1;
     }
   }
+
+  // ==========================================
+  // THÊM CÁC HÀM XỬ LÝ CHO BẢNG ORDERS
+  // ==========================================
+
+  Future<int> insertOrder(OrderModel order) async {
+    try {
+      final db = await instance.database;
+      return await db.insert('orders', order.toMap());
+    } catch (e) {
+      return -1;
+    }
+  }
+
+  Future<List<OrderModel>> getOrdersForUser(String email) async {
+    try {
+      final db = await instance.database;
+      final result = await db.query(
+        'orders',
+        where: 'userEmail = ?',
+        whereArgs: [email.trim().toLowerCase()],
+        orderBy: 'id DESC', // Sắp xếp đơn mới nhất lên đầu
+      );
+      return result.map((map) => OrderModel.fromMap(map)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ==========================================
 
   Future<void> close() async {
     final db = await instance.database;

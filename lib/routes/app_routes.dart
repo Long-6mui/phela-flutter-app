@@ -13,6 +13,8 @@ import '../screens/profile/add_address_page.dart';
 import '../screens/profile/about_page.dart'; 
 import '../screens/main/main_page.dart';
 import '../screens/store/store_list_page.dart';
+import '../screens/profile/explore_app_page.dart';
+import '../screens/profile/order_history_page.dart'; // <-- Thêm import cho Lịch sử đặt hàng
 
 class AppRoutes {
   static const String splash = '/';
@@ -26,9 +28,11 @@ class AppRoutes {
   static const String savedAddresses = '/profile/addresses';
   static const String addAddress = '/profile/addresses/add';
   static const String editAddress = '/profile/addresses/edit';
+  static const String exploreApp = '/explore-app';
   static const String about = '/about'; 
   static const String main = '/main';
   static const String store = '/store';
+  static const String orderHistory = '/order-history';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -43,6 +47,7 @@ class AppRoutes {
       savedAddresses: (context) => const SavedAddressesPage(),
       addAddress: (context) => const AddAddressPage(),
       editAddress: (context) => const EditAddressPage(),
+      exploreApp: (context) => const ExploreAppPage(),
       about: (context) => const AboutPage(), 
       main: (context) {
         final args = ModalRoute.of(context)?.settings.arguments;
@@ -50,6 +55,7 @@ class AppRoutes {
         return MainPage(initialIndex: initialIndex);
       },
       store: (context) => const StoreListPage(),
+      orderHistory: (context) => const OrderHistoryPage(), 
     };
   }
 }

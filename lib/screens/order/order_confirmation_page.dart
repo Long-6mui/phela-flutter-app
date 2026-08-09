@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../models/order_model.dart';
+import '../../services/order_service.dart';
+import 'dart:convert';
 
 const _brandColor = Color(0xFFBF8248);
 const _dividerColor = Color(0xFFF4EFE3);
@@ -163,8 +166,47 @@ class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
     );
   }
 
-  void _confirmOrder() {
+  void _confirmOrder() async {
+    final firstItemName = widget.items.isNotEmpty ? widget.items.first.name : 'Đơn hàng';
+    final itemNameStr = widget.items.length > 1 
+        ? '$firstItemName và các món khác' 
+        : firstItemName;
+        
+    final totalQty = widget.items.fold(0, (sum, item) => sum + item.quantity);
+
+    final now = DateTime.now();
+    final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} '
+                    '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    // ĐÓNG GÓI DANH SÁCH MÓN THÀNH JSON
+    final itemsList = widget.items.map((item) => {
+      'name': item.name,
+      'quantity': item.quantity,
+      'price': item.unitPrice,
+      'option': item.option,
+    }).toList();
+    final itemsJsonStr = jsonEncode(itemsList);
+
+    final newOrder = OrderModel(
+      userEmail: '', 
+      storeName: widget.storeName,
+      itemName: itemNameStr,
+      quantity: totalQty,
+      totalPrice: _total,
+      orderDate: dateStr,
+      paymentMethod: _paymentMethod,
+      recipientName: widget.recipientName,
+      phone: widget.recipientPhone,
+      addressStr: widget.deliveryAddress,
+      isPickup: widget.isPickup ? 1 : 0,
+      itemsJson: itemsJsonStr, // <-- ĐÃ LƯU DANH SÁCH VÀO ĐÂY
+    );
+
+    await OrderService.addOrder(newOrder);
+
     widget.onConfirmed();
+    
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const OrderSuccessPage()),

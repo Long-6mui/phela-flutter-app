@@ -767,7 +767,7 @@ class _UnavailableTabView extends StatelessWidget {
               const Text('Mô tả', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 8),
               const Text(
-                'Happy Chill Birthday! Mừng Đồng Chill Huỳnh Quốc Anh thêm tuổi mới, Phê La dành tặng bạn 01 phần Bánh Ngọt bất kỳ, mã E-Voucher L8YPL8WX, được sử dụng từ 26/08/2025 đến 10/09/2025. Bạn vui lòng đưa mã E-Voucher cho thu ngân chúng mình trước khi gọi món, để liên hoan tiệc sinh nhật cùng Phê La. Thổi nến, cắt bánh, cùng Phê La đón tuổi mới thật chill nha!',
+                'Happy Chill Birthday! Mừng Đồng Chill thêm tuổi mới, Phê La dành tặng bạn 01 phần Bánh Ngọt bất kỳ, mã E-Voucher L8YPL8WX, được sử dụng từ 26/08/2025 đến 10/09/2025. Bạn vui lòng đưa mã E-Voucher cho thu ngân chúng mình trước khi gọi món, để liên hoan tiệc sinh nhật cùng Phê La. Thổi nến, cắt bánh, cùng Phê La đón tuổi mới thật chill nha!',
                 style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
               ),
             ],
@@ -929,7 +929,7 @@ class _BirthdayTicketCard extends StatelessWidget {
                           const Text('Chương trình tặng bánh sinh nhật', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 4),
                           Text(
-                            'Happy Chill Birthday! Mừng Đồng Chill Huỳnh Quốc Anh thêm tuổi mới, Phê La...',
+                            'Happy Chill Birthday! Mừng Đồng Chill thêm tuổi mới, Phê La dành tặng bạn...',
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.3),
                             maxLines: 2, overflow: TextOverflow.ellipsis,
                           ),
